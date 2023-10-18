@@ -12,7 +12,28 @@ Short for "not yet implemented".  This can be used in either the parser or the
 solution function in the main adventOfCode Functions.
 -}
 nyi :: String -> a -> Result b
-nyi name _ = Left $ name ++ " Not Yet Implemented"
+nyi name = const . Left $ name ++ " Not Yet Implemented"
+
+{-|
+Short for "not yet implemented".  This can be used in either the parser or the
+solution function in the main adventOfCode Functions.
+-}
+nyiConf :: String -> a -> b -> Result c
+nyiConf name = const . const . Left $ name ++ " Not Yet Implemented"
+
+{-|
+If your solution cannot return an error, and therefore doesn't use Result,
+use this to lift it into result
+-}
+always :: (a -> b) -> a -> Result b
+always = (pure .)
+
+{-|
+As Always, but allows for a second argument for the configurableAdventOfCode Family
+-}
+alwaysConf :: (a -> b -> c) -> a -> b -> Result c
+alwaysConf = doubleCompose pure
+    where doubleCompose = (.) . (.)
 
 {-|
 Lift a Maybe into a Result with a meaningful error.
@@ -20,12 +41,4 @@ Lift a Maybe into a Result with a meaningful error.
 maybeToResult :: String -> Maybe a -> Result a
 maybeToResult _ (Just x) = Right x
 maybeToResult s Nothing = Left s
-
-{-|
-If your solution cannot return an error, and therefore doesn't use Result,
-use this to lift it into result
--}
-configurableRight :: (a -> b -> c) -> a -> b -> Result c
-configurableRight = doubleCompose Right
-    where doubleCompose = (.) . (.)
 

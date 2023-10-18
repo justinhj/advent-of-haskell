@@ -14,7 +14,7 @@ module Helpers.Input where
 This will break up the input a line at a time and run your parser against each
 line in turn.  Use this method if your parsing is guaranteed, such as if
 each line is a name or something.  If there's any error possible, return an
-Either String a and use `lineByLineM` instead.
+Result a and use `lineByLineM` instead.
 -}
 lineByLine :: (String -> a) -- ^ A parser for a single line of input
     -> String               -- ^ You will not provide this, the framework will, it is input
