@@ -40,13 +40,13 @@ iteraiton 10k times.  Using this, we can provide that single configuration
 variable.
 -}
 adventOfCodeConfigurable :: Answer b => Eq b
-                         => [ConfigurableTestCase a b] -- ^ Test Cases and expected output
-                         -> a -- ^ What the configuration input should be for the main
+                         => [TestCaseConfigurable a b] -- ^ Test Cases and expected output
+                         -> a -- ^ What the configuration input should be for the main input
                          -> Parser c -- ^ The Parser for this problem
-                         -> ConfigurableSolver a c b -- ^ The solver for this problem, with config arg
+                         -> SolverConfigurable a c b -- ^ The solver for this problem, with config arg
                          -> AdventProblem b
 adventOfCodeConfigurable testCases arg parse mkSolver baseDir = (,) <$> testResults <*> result
-    where testResults = configurableTest parse mkSolver resolvedTestCases
+    where testResults = testConfigurable parse mkSolver resolvedTestCases
           result = readAndApply (dirname </> "input") $ process parse (mkSolver arg)
           resolvedTestCases = map (\(name, a, res) -> (dirname </> name, a, res)) testCases
           dirname = baseDir

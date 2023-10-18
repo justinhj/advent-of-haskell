@@ -1,7 +1,8 @@
 # Helpers
 
 Here are some helpers to make your problem solving a bit more ergonomic.  This document assumes
-you've read the similar one in the `lib` folder, as well as the Global README.
+you've read the [similar one](../lib/lib.md) in the `lib` folder, as well as the [
+Global README](../README.md)
 
 ## Helpers.Solution
 

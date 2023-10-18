@@ -50,11 +50,11 @@ test parse solve = mapM exec
 {-|
 Run a configurable test case and return the result
 -}
-configurableTest :: Answer c => Eq c
+testConfigurable :: Answer c => Eq c
                  => Parser a
-                 -> ConfigurableSolver b a c
-                 -> [ConfigurableTestCase b c]
+                 -> SolverConfigurable b a c
+                 -> [TestCaseConfigurable b c]
                  -> IO [TestResult]
-configurableTest parse mkSolver = mapM exec
+testConfigurable parse mkSolver = mapM exec
     where exec (name, arg, expected) = (name,) <$> result
             where result = readAndApply name $ check expected parse $ mkSolver arg

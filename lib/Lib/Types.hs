@@ -30,7 +30,7 @@ which is different for the real thing.  Think like "number of iterations" for
 some game or another.  In this case, we provide a function which provides a
 solver based on that input.
 -}
-type ConfigurableSolver a b c = a -> Solver b c
+type SolverConfigurable a b c = a -> Solver b c
 
 {-|
 Test cases are based on a file that _looks_ like input from the puzzle.
@@ -47,14 +47,13 @@ In this triple, the first element is still the name of the example file.  The
 expected result is moved to the last item, and in between is the configurable
 input.
 -}
-type ConfigurableTestCase a b = (String, a, b)
+type TestCaseConfigurable a b = (String, a, b)
 
 {-|
 The result of a test - The name of the test file, and a possible Error message.
 Nothing indicates that the test was successful.
 -}
 type TestResult = (String, Maybe String)
-
 
 {-|
 An Answer to an AoC Problem.  This utility class allows any thing that
