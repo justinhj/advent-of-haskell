@@ -346,24 +346,24 @@ The Present Wrappers: Snowball is 60cm, Cocoa is 72cm, Jingle is 59cm, Jurgen is
 
 The full parse step might look like:
 
-```
-    teamNameScanner = "The " ^& (/=\':\') ^& ": "
+```haskell
+teamNameScanner = "The " ^& (/=\':\') ^& ": "
 
-    elfScanner = (/=' ') ^& " is " ^& scanInt ^& "cm"
+elfScanner = (/=' ') ^& " is " ^& scanInt ^& "cm"
 
-    teamScanner = teamNameScanner ^& (elfScanner ^* ", ")
+teamScanner = teamNameScanner ^& (elfScanner ^* ", ")
 
-    data Elf = Elf String Int
+data Elf = Elf String Int
     
-    data Team = Team String [Elf]
+data Team = Team String [Elf]
 
-    instance Grokkable Elf where
-        toResult = grok2 Elf
+instance Grokkable Elf where
+    toResult = grok2 Elf
 
-    instance Grokkable Team where
-        toResult = grok2 Team
+instance Grokkable Team where
+    toResult = grok2 Team
 
-    parseTeam = parse teamScanner
+parseTeam = parse teamScanner
 
-    parseInputToTeams = lineByLineM parseTeam
+parseInputToTeams = lineByLineM parseTeam
 ```       
