@@ -1,0 +1,4 @@
+packages: AdventOfCode.cabal
+haddock-hyperlink-source: True
+haddock-all: True
+optimization: 2
