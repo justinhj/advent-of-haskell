@@ -12,12 +12,12 @@ define PUZZLE_TGT
 puzzle_$(day)_$(part): examples/$(day)/input
 	cabal run AdventOfCode -- puzzle $(day) $(part)
 
+.PHONY:
 test_$(day)_$(part):
 	cabal run AdventOfCode -- test $(day) $(part)
 endef
 
 $(foreach day, $(DAYS), $(foreach part, $(PARTS), $(eval $(PUZZLE_TGT))))
-    
 
 .PHONY:
 inputs: $(ALL_INPUTS)
@@ -25,4 +25,12 @@ inputs: $(ALL_INPUTS)
 .PHONY:
 all:
 	make inputs || true
-	cabal run AdventOfCode -- puzzle 25 2
+	cabal run AdventOfCode -- puzzle all
+
+.PHONY:
+test-all:
+	cabal run AdventOfCode -- test all
+
+.PHONY:
+lint-fix:
+	./doLint.sh

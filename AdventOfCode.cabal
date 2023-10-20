@@ -83,12 +83,7 @@ library problems
     build-depends:
         AdventOfCode:lib,
         AdventOfCode:helpers,
-        split,
-        containers,
-        Cabal,
-        yjtools,
-        either,
-        ghc,
+        --Add your dependencies here, with trailing commas
     exposed-modules:
         DayOne.PartOne
         DayOne.PartTwo

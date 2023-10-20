@@ -70,7 +70,7 @@ switch [] = putStrLn "Invoke with (puzzle|test) (day) (part)"
 runAoC :: (String -> String -> String -> IO()) -> [String] -> IO()
 runAoC f [day, "both"] = putStrLn ("Running Both problems for Day " ++ day) >> run "1" >> run "2"
     where run part = addHeadersAndSpace day part $ runAoC f [day, part]
-runAoC f ["25", "2"] = foldl (>>) (putStrLn "Running all Problems") solutions
+runAoC f ["all"] = foldl (>>) (putStrLn "Running all Problems") solutions
     where solutions = map run days
           run (day, part) = addHeadersAndSpace day part $ runAoC f [day, part]
           days = [(show d, show p) | d <- [1..24] :: [Int], p <- [1..2] :: [Int]] ++ [("25", "1")]
