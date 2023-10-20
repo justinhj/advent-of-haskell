@@ -245,3 +245,14 @@ print the printable thing to stderr, then return the thing you wanted to return.
 
 This allows you to ouput information without having to change the signature of a
 function, or having to deal with the IO Monad.
+
+## Further Reading
+
+If you're new to Haskell, I recommend
+[Learn You a Haskell for Great Good!](http://learnyouahaskell.com/) - it's an
+incredibly useful guide to understanding Haskell's syntax and foibles.
+
+If you need to do more advanced stuff in this framework (such as _slightly_
+the algorithm between the tests and the input), check out the
+[lib documentation](lib/lib.md), which dives into some of the truth behind
+the abstractions, and also introduces the concept of "Configurability".
