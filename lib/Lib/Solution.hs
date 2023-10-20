@@ -29,7 +29,7 @@ adventOfCode :: Answer a => Eq a
              -> AdventProblem a
 adventOfCode testCases parse solve baseDir = (,) <$> testResults <*> result
     where testResults = test parse solve resolvedTestCases
-          result = readAndApply (dirname </> "input") $ process parse solve
+          result = catch Left . readAndApply (dirname </> "input") $ process parse solve
           resolvedTestCases = map (\(name, res) -> (dirname </> name, res)) testCases
           dirname = baseDir
 
@@ -47,6 +47,6 @@ adventOfCodeConfigurable :: Answer b => Eq b
                          -> AdventProblem b
 adventOfCodeConfigurable testCases arg parse mkSolver baseDir = (,) <$> testResults <*> result
     where testResults = testConfigurable parse mkSolver resolvedTestCases
-          result = readAndApply (dirname </> "input") $ process parse (mkSolver arg)
+          result = catch Left . readAndApply (dirname </> "input") $ process parse (mkSolver arg)
           resolvedTestCases = map (\(name, a, res) -> (dirname </> name, a, res)) testCases
           dirname = baseDir

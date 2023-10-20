@@ -5,6 +5,7 @@ Descritption: lib-internal functions for processing solutions against Input.
 module Lib.Processing where
 
 import Lib.Types
+import System.IO.Error(catchIOError)
 
 {-|
 Apply a parser and a solution to an already read input.
@@ -45,7 +46,7 @@ test :: Answer b => Eq b
      -> IO [TestResult]
 test parse solve = mapM exec
     where exec (name, expected) = (name,) <$> result
-            where result = readAndApply name $ check expected parse solve
+            where result = catch Just . readAndApply name $ check expected parse solve
 
 {-|
 Run a configurable test case and return the result
@@ -57,4 +58,7 @@ testConfigurable :: Answer c => Eq c
                  -> IO [TestResult]
 testConfigurable parse mkSolver = mapM exec
     where exec (name, arg, expected) = (name,) <$> result
-            where result = readAndApply name $ check expected parse $ mkSolver arg
+            where result = catch Just . readAndApply name $ check expected parse $ mkSolver arg
+
+catch :: (String -> a) -> IO a -> IO a
+catch f io = catchIOError io (pure . f . show)
