@@ -10,6 +10,19 @@ learning Haskell.  The goals for this framework are:
 
 ## Setup
 
+### Clear Framework Level Testing
+
+Run
+
+```bash
+make obliterate-framework-testing
+```
+
+in order to get rid of:
+
+* Github Actions Setup
+* Snapshots for Integration Testing
+
 ### Install Haskell and Cabal
 
 The Haskell ecosystem is surprisingly fragmented - your exact system will make
@@ -17,8 +30,8 @@ the exact path you take to installing haskell unique to you.  However, I
 recommend that you pursue a toolchain that will allow you to install multiple
 versions of Haskell, as this repository is tested on the following versions:
 
-* Haskell: 9.4.3
-* Cabal: 3.10
+* Haskell: 9.4, 9.6, 9.8
+* Cabal: 3.4, 3.6, 3.8, 3.10
 
 I have had the most success using [asdf](https://asdf-vm.com/) to install Haskell,
 and downloading the [cabal](https://www.haskell.org/cabal/download.html) binary

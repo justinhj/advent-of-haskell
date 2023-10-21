@@ -34,3 +34,7 @@ test-all:
 .PHONY:
 lint-fix:
 	./doLint.sh
+
+.PHONY:
+obliterate-framework-testing:
+	rm -rf .github snapshots
