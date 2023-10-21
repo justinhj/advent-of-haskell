@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest ubuntu-latest]
         ghc: ["9.8", "9.6", "9.4"]
         cabal: ["3.4", "3.6", "3.8", "3.10"]
     name: Integration Tests
