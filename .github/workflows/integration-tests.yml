@@ -19,6 +19,6 @@ jobs:
       - run: cabal build
       - run: "cabal run AdventOfCode -- puzzle all | tee integration.produced"
       - run: cat integration.produced
-      - run: cmp snapshots/${{ matrix.cabal }} integration.produced
+      - run: diff snapshots/${{ matrix.cabal }} integration.produced
 
 
