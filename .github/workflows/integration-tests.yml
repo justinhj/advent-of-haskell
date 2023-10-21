@@ -7,8 +7,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        ghc: [9.8, 9.6, 9.4]
-        cabal: [3.4, 3.6, 3.8, 3.10]
+        ghc: ["9.8", "9.6", "9.4"]
+        cabal: ["3.4", "3.6", "3.8", "3.10"]
     name: Integration Tests
     steps:
       - uses: actions/checkout@v3
@@ -17,6 +17,8 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
       - run: "cabal run AdventOfCode -- puzzle all | tee integration.produced"
+      - run: cat integration.snapshot 
+      - run: cat integration.produced
       - run: cmp integration.snapshot integration.produced
 
 
