@@ -1,3 +1,5 @@
+![Integration Tests Badge](https://github.com/frankiethekneeman/advent-of-haskell/actions/workflows/integration-tests.yml/badge.svg?branch=main)
+
 # Advent of Haskell
 
 I really love Haskell, and I think you could love it, too.  Please feel free to
