@@ -16,6 +16,7 @@ jobs:
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
+      - run: cabal build
       - run: "cabal run AdventOfCode -- puzzle all | tee integration.produced"
       - run: cat integration.snapshot 
       - run: cat integration.produced
