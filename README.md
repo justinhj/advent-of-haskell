@@ -67,7 +67,7 @@ This file is just the 4 digit year on which you're working.  Initializing this
 is as easy as 
 
 ```bash
-cat 2023 > .year
+echo 2023 > .year
 ```
 
 #### .cookie
