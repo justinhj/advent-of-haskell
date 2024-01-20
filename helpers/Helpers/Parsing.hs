@@ -178,6 +178,7 @@ module Helpers.Parsing (
     indicatedBy,
     indicatedByEmptyList,
     -- * Combining Scanners
+    discard,
     -- ** Explicit
     sequential,
     alternating,
@@ -354,6 +355,15 @@ l ^|  r = alternating [scan l, scan r]
     -> b -- ^ The delimiter
     -> Scanner
 target ^* delimiter  = repeating (scan delimiter) (scan target)
+
+
+{-|
+Take any scanner, and discard any tokens it finds.
+-}
+discard :: Scannable a => a -> Scanner
+discard s = getRemainder . scan s
+    where getRemainder (Scanned _ rest) = getRemainder rest
+          getRemainder x = x
 
 {-|
 Combine a list of scannables sequentially, i.e.: scan the first,
