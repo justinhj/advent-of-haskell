@@ -84,6 +84,7 @@ library problems
         AdventOfCode:lib,
         AdventOfCode:helpers,
         --Add your dependencies here, with trailing commas
+        containers,
     exposed-modules:
         DayOne.PartOne
         DayOne.PartTwo
