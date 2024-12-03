@@ -6,7 +6,7 @@ module DayOne.PartOne(Out, solution) where
 
 import Lib.Solution
 import Lib.Types
-import Helpers.Solution
+import Control.Monad (foldM)
 import Data.List (sort)
 
 -- | The type of the answer to this problem
@@ -17,14 +17,13 @@ examples = [ ("input", 3714264),
              ("example", 11) ]
 
 -- TODO use the authors parsing here or is it overkill?
--- TODO optionally use Result here
-parseLine :: ([Int], [Int]) -> String -> ([Int], [Int])
+parseLine :: ([Int], [Int]) -> String -> Result ([Int], [Int])
 parseLine (l1, l2) line = case map read (words line) :: [Int] of
-  [n1, n2] -> (n1 : l1, n2 : l2)
-  _ -> error "Invalid input format. Please provide exactly two numbers."
+  [n1, n2] -> Right (n1 : l1, n2 : l2)
+  _ -> Left "Invalid input format. Please provide exactly two numbers."
 
-parseAll :: String -> ([Int], [Int])
-parseAll input = foldl parseLine ([],[]) (lines input)
+parseAll :: String -> Result ([Int], [Int])
+parseAll input = foldM parseLine ([],[]) (lines input)
 
 solve :: ([Int], [Int]) -> Result Int
 solve (l1,l2) = let s1 = sort l1
@@ -34,4 +33,4 @@ solve (l1,l2) = let s1 = sort l1
 
 -- | Solution for Day One, Part One
 solution:: AdventProblem Out
-solution = adventOfCode examples (always parseAll) solve
+solution = adventOfCode examples parseAll solve
