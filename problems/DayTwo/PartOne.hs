@@ -21,7 +21,8 @@ type Out = Int
 -- ensure all at least 1 and at most 3
 
 examples :: [(String, Out)]
-examples = [ ("example", 2) ]
+examples = [ ("example", 2),
+              ("input", 334) ]
 
 parseLine :: [[Int]] -> String -> Result [[Int]]
 parseLine nums line = let
@@ -34,8 +35,29 @@ parseLine nums line = let
 parseAll :: String -> Result [[Int]]
 parseAll input = foldM parseLine [] (lines input)
 
+getDiffs :: [Int] -> [Int]
+getDiffs z = map (uncurry (-)) zipped
+  where 
+    zipped = zip z (tail z) 
+
+sameSign :: (Num a, Ord a) => a -> a -> Bool
+sameSign x y = x * y >= 0
+
+allSameSign :: [Int] -> Bool
+allSameSign [] = False
+allSameSign l = all (\a -> sameSign a (head l)) l
+
+allGradualChange :: [Int] -> Bool
+allGradualChange l = (minimum abs_vals >= 1) && (maximum abs_vals <=3)
+  where abs_vals = map abs l
+
 solve :: [[Int]] -> Result Int
-solve = undefined
+solve nums = Right valid_nums
+  where
+  diff_lists = map getDiffs nums
+  same_sign = filter allSameSign diff_lists 
+  gradual_change = filter allGradualChange same_sign 
+  valid_nums = length gradual_change
 
 -- | Solution for Day Two, Part One
 solution:: AdventProblem Out
