@@ -8,17 +8,19 @@ import Lib.Solution
 import Lib.Types
 import Control.Monad (foldM)
 import qualified Data.Map as Map
+import Text.Read (readMaybe)
 
 -- | The type of the answer to this problem
 type Out = Int
 
 examples :: [(String, Out)]
 examples = [ ("input", 18805872),
-             ("example", 31) ]
+             ("example", 31),
+             ("error", 1) ]
 
 parseLine :: ([Int], [Int]) -> String -> Result ([Int], [Int])
-parseLine (l1, l2) line = case map read (words line) :: [Int] of
-  [n1, n2] -> Right (n1 : l1, n2 : l2)
+parseLine (l1, l2) line = case map readMaybe (words line) :: [Maybe Int] of
+  [Just n1, Just n2] -> Right (n1 : l1, n2 : l2)
   _ -> Left "Invalid input format. Please provide exactly two numbers."
 
 parseAll :: String -> Result ([Int], [Int])
@@ -33,12 +35,16 @@ occurrences :: [Int] -> [Int] -> Map.Map Int Int
 occurrences l1 l2 = foldl (\acc a -> Map.insertWith const a (countOccurrences a l2) acc) Map.empty l1
 
 solve :: ([Int], [Int]) -> Result Int
-solve (l1,l2) = 
-  let
-    occs = occurrences l1 l2
-    val = foldl (\acc a -> acc + (a * Map.findWithDefault 0 a occs)) 0 l1
-  in
-    Right val
+solve (l1, l2) = Right $ sum $ map (\x -> x * Map.findWithDefault 0 x occs) l1
+  where occs = occurrences l1 l2
+
+-- My original version was more verbose but probably more efficient
+-- solve (l1,l2) = 
+--   let
+--     occs = occurrences l1 l2
+--     val = foldl (\acc a -> acc + (a * Map.findWithDefault 0 a occs)) 0 l1
+--   in
+--     Right val
 
 -- | Solution for Day One, Part One
 solution:: AdventProblem Out
