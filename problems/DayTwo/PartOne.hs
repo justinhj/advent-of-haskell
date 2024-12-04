@@ -22,7 +22,7 @@ parseLine nums line = let
   these = mapMaybe readMaybe (words line)
     in 
   if null these 
-    then Left "No numbers found"
+    then Left "Parse error"
     else Right (these : nums)
 
 parseAll :: String -> Result [[Int]]
@@ -35,20 +35,14 @@ getDiffs z = map (uncurry (-)) zipped
 
 allSameSign :: [Int] -> Bool
 allSameSign [] = False
-allSameSign l = all (\a -> signum a == signum hl) l
-  where hl = signum $ head l
+allSameSign (x:xs) = all (\a -> signum a == signum x) xs
 
 allGradualChange :: [Int] -> Bool
 allGradualChange l = (minimum abs_vals >= 1) && (maximum abs_vals <=3)
   where abs_vals = map abs l
 
 solve :: [[Int]] -> Result Int
-solve nums = Right valid_nums
-  where
-  diff_lists = map getDiffs nums
-  same_sign = filter allSameSign diff_lists 
-  gradual_change = filter allGradualChange same_sign 
-  valid_nums = length gradual_change
+solve = Right . length . filter (\xs -> allSameSign xs && allGradualChange xs) . map getDiffs
 
 -- | Solution for Day Two, Part One
 solution:: AdventProblem Out
