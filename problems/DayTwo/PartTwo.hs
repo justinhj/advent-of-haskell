@@ -18,9 +18,10 @@ examples = [ ("example", 4),
               ("input", 400) ]
 
 parseLine :: [[Int]] -> String -> Result [[Int]]
-parseLine nums line = let
-  these = mapMaybe readMaybe (words line)
-    in 
+parseLine nums line =
+  let
+    these = mapMaybe readMaybe (words line)
+  in 
   if null these 
     then Left "Parse error"
     else Right (these : nums)
@@ -32,16 +33,13 @@ removeNth :: Int -> [a] -> [a]
 removeNth n xs = take n xs ++ drop (n + 1) xs
 
 getRemovals :: [Int] -> [[Int]]
-getRemovals l = map (\n -> removeNth n l) [0..(length l-1)] 
+getRemovals l = map (`removeNth` l) [0..(length l-1)] 
 
 getDiffs :: [Int] -> [Int]
 getDiffs z = map (uncurry (-)) zipped
   where 
     zipped = zip z (tail z) 
 
--- parseAll gave us a list of lists
--- here we convert that to a list of lists of list.
--- Each contains the original list grouped with all its variants with "one removed"
 combineInputsWithRemovals :: [[Int]] -> [[[Int]]]
 combineInputsWithRemovals = concatMap (\x -> [x : getRemovals x])
 
