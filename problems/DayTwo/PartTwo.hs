@@ -15,7 +15,7 @@ type Out = Int
 
 examples :: [(String, Out)]
 examples = [ ("example", 4),
-              ("input", 334) ]
+              ("input", 400) ]
 
 parseLine :: [[Int]] -> String -> Result [[Int]]
 parseLine nums line = let
@@ -39,8 +39,11 @@ getDiffs z = map (uncurry (-)) zipped
   where 
     zipped = zip z (tail z) 
 
-combineInputsWithRemovals :: [[Int]] -> [[Int]]
-combineInputsWithRemovals = concatMap (\x -> [x] ++ (getRemovals x))
+-- parseAll gave us a list of lists
+-- here we convert that to a list of lists of list.
+-- Each contains the original list grouped with all its variants with "one removed"
+combineInputsWithRemovals :: [[Int]] -> [[[Int]]]
+combineInputsWithRemovals = concatMap (\x -> [x : getRemovals x])
 
 allSameSign :: [Int] -> Bool
 allSameSign [] = False
@@ -50,8 +53,17 @@ allGradualChange :: [Int] -> Bool
 allGradualChange l = (minimum abs_vals >= 1) && (maximum abs_vals <=3)
   where abs_vals = map abs l
 
+validateInput :: [Int] -> Bool
+validateInput xs = allSameSign diffs && allGradualChange diffs
+  where diffs = getDiffs xs
+
+validateGroup :: [[Int]] -> Bool
+validateGroup = any validateInput
+
 solve :: [[Int]] -> Result Int
-solve xss = (Right . length . filter (\xs -> allSameSign xs && allGradualChange xs) . map getDiffs) (combineInputsWithRemovals xss)
+solve xss = Right $ length goodLists
+  where 
+    goodLists = filter validateGroup (combineInputsWithRemovals xss)
 
 -- | Solution for Day Two, Part One
 solution:: AdventProblem Out
