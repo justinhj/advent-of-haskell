@@ -14,7 +14,15 @@ type Out = Int
 data Mul = Mul Int Int
 
 examples :: [(String, Out)]
-examples = [("input", 10), ("example", 161)]
+examples = [("input", 10),
+            ("example", 161),
+            ("test1", 10001),
+            ("test2", 10001),
+            ("test3", 60)]
+
+-- 2 digits 1 digit 88,1 ok 
+-- 3 digits 1 digit 111,1 ok
+-- 3 digits 1 digit 100,1 returns 1 ???
 
 data ParseState = Nostate | LNum | RNum | M | U | L | Comma | LB
   deriving Eq
@@ -39,25 +47,24 @@ parser (muls, state, left, right) c = case state of
     '(' -> (muls, LB, "", "")
     _   -> (muls, Nostate, "", "")
   LB -> 
-    if isDigit c
-      then (muls, LNum, c : left, right)
-      else (muls, Nostate, "", "")
+    if isDigit c then
+      (muls, LNum, c : left, right)
+    else (muls, Nostate, "", "")
   LNum -> 
     if isDigit c && length left < 3 then
       (muls, LNum, c : left, right)
     else if c == ',' then
       (muls, Comma, left, right)
     else (muls, Nostate, "", "")
-    -- mul(12,345)
   Comma ->
-    if isDigit c
-      then (muls, RNum, left, c : right)
-      else (muls, Nostate, "", "")
+    if isDigit c then
+      (muls, RNum, left, c : right)
+    else (muls, Nostate, "", "")
   RNum -> 
     if isDigit c && length right < 3 then
       (muls, RNum, left, c : right)
     else if c == ')' then
-      (muls ++ [Mul (read left) (read right)], Nostate, "", "")
+      (muls ++ [Mul (read (reverse left)) (read (reverse right))], Nostate, "", "")
     else 
       (muls, Nostate, "", "")
 
