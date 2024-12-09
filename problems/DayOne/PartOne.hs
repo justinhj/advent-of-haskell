@@ -26,11 +26,10 @@ parseAll :: String -> Result ([Int], [Int])
 parseAll input = foldM parseLine ([],[]) (lines input)
 
 solve :: ([Int], [Int]) -> Result Int
-solve (l1,l2) = let s1 = sort l1
-                    s2 = sort l2
-                    in
-  Right (foldl (\acc (x, y) -> acc + abs (x - y)) 0 (zip s1 s2))
-
+solve (l1,l2) = Right (foldl (\acc (x, y) -> acc + abs (x - y)) 0 (zip s1 s2))
+  where s1 = sort l1
+        s2 = sort l2
+  
 -- | Solution for Day One, Part One
 solution:: AdventProblem Out
 solution = adventOfCode examples parseAll solve

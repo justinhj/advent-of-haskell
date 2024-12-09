@@ -9,6 +9,7 @@ import Lib.Types
 import Control.Monad (foldM)
 import Data.Maybe (mapMaybe)
 import Text.Read (readMaybe)
+import Helpers.Solution (always)
 
 -- | The type of the answer to this problem
 type Out = Int
@@ -59,7 +60,7 @@ validateGroup :: [[Int]] -> Bool
 validateGroup = any validateInput
 
 solve :: [[Int]] -> Result Int
-solve xss = Right $ length goodLists
+solve xss = always length goodLists
   where 
     goodLists = filter validateGroup (combineInputsWithRemovals xss)
 

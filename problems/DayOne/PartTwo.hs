@@ -38,7 +38,7 @@ solve :: ([Int], [Int]) -> Result Int
 solve (l1, l2) = Right $ sum $ map (\x -> x * Map.findWithDefault 0 x occs) l1
   where occs = occurrences l1 l2
 
--- My original version was more verbose but probably more efficient
+-- My original version was more verbose but probably slightly more efficient
 -- solve (l1,l2) = 
 --   let
 --     occs = occurrences l1 l2

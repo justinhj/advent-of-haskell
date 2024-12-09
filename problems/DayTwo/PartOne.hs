@@ -9,6 +9,7 @@ import Lib.Types
 import Control.Monad (foldM)
 import Data.Maybe (mapMaybe)
 import Text.Read (readMaybe)
+import Helpers.Solution (always)
 
 -- | The type of the answer to this problem
 type Out = Int
@@ -42,7 +43,7 @@ allGradualChange l = (minimum abs_vals >= 1) && (maximum abs_vals <=3)
   where abs_vals = map abs l
 
 solve :: [[Int]] -> Result Int
-solve = Right . length . filter (\xs -> allSameSign xs && allGradualChange xs) . map getDiffs
+solve = always $ length . filter (\xs -> allSameSign xs && allGradualChange xs) . map getDiffs
 
 -- | Solution for Day Two, Part One
 solution:: AdventProblem Out
