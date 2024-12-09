@@ -14,7 +14,7 @@ type Out = Int
 data Mul = Mul Int Int
 
 examples :: [(String, Out)]
-examples = [("input", 10),
+examples = [("input", 168539636),
             ("example", 161),
             ("test1", 10001),
             ("test2", 10001),
@@ -36,37 +36,40 @@ parser :: Acc -> Char -> Acc
 parser (muls, state, left, right) c = case state of
   Nostate -> case c of
     'm' -> (muls, M, "", "")
-    _ -> (muls, Nostate, "", "")
+    _ -> resetState
   M -> case c of
     'u' -> (muls, U, "", "")
-    _ -> (muls, Nostate, "", "")
+    _ -> resetState
   U -> case c of
     'l' -> (muls, L, "", "")
-    _ -> (muls, Nostate, "", "")
+    _ -> resetState
   L -> case c of
     '(' -> (muls, LB, "", "")
-    _   -> (muls, Nostate, "", "")
+    _   -> resetState
   LB -> 
     if isDigit c then
       (muls, LNum, c : left, right)
-    else (muls, Nostate, "", "")
+    else resetState
   LNum -> 
     if isDigit c && length left < 3 then
       (muls, LNum, c : left, right)
     else if c == ',' then
       (muls, Comma, left, right)
-    else (muls, Nostate, "", "")
+    else resetState
   Comma ->
     if isDigit c then
       (muls, RNum, left, c : right)
-    else (muls, Nostate, "", "")
+    else resetState
   RNum -> 
     if isDigit c && length right < 3 then
       (muls, RNum, left, c : right)
     else if c == ')' then
       (muls ++ [Mul (read (reverse left)) (read (reverse right))], Nostate, "", "")
     else 
-      (muls, Nostate, "", "")
+      resetState
+  where
+      resetState = (muls, Nostate, "", "")
+
 
 parse :: String -> [Mul]
 parse s = getMuls parsed
