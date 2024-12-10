@@ -20,10 +20,6 @@ examples = [("input", 168539636),
             ("test2", 10001),
             ("test3", 60)]
 
--- 2 digits 1 digit 88,1 ok 
--- 3 digits 1 digit 111,1 ok
--- 3 digits 1 digit 100,1 returns 1 ???
-
 data ParseState = Nostate | LNum | RNum | M | U | L | Comma | LB
   deriving Eq
 
@@ -81,6 +77,9 @@ mult (Mul l r) = l * r
 
 solve :: String -> Int
 solve input = sum $ map mult (parse input)
+
+-- Note it may be nicer to use the author's parser than a hand coded state machine lol
+-- also consider making the parsing step part of the parsing step instead of the solution? 
 
 -- | Solution for Day Three, Part One
 solution:: AdventProblem Out
