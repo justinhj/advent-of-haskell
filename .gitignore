@@ -72,8 +72,9 @@ Temporary Items
 # End of https://www.toptal.com/developers/gitignore/api/haskell,linux,osx
 # Don't commit your actual input files, they can be regenerated
 examples/*/input
-examples/*/example
+examples/*/example*
 examples/*/error
+examples/*/test*
 # Don't commit your login cookie.
 .cookie
 # You can commit this if you want, but I don't want it in the tempalte.
