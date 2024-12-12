@@ -86,6 +86,7 @@ library problems
         AdventOfCode:helpers,
         --Add your dependencies here, with trailing commas
         containers,
+        parsec,
     exposed-modules:
         DayOne.PartOne
         DayOne.PartTwo
