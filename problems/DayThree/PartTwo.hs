@@ -15,7 +15,7 @@ data Mul = Mul Int Int
 
 examples :: [(String, Out)]
 examples = [("input",  97529391),
-            ("example1", 161),
+            ("example", 161),
             ("example2", 48),
             ("test1", 10001),
             ("test2", 10001),
