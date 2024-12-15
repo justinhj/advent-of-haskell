@@ -22,7 +22,7 @@ examples = [
             ("test3", 60)
             ]
 
-data ParsedItem = Mul Int Int | On | Off | Garbage
+data ParsedItem = Mul Int Int | On | Off
   deriving (Show, Eq)
 
 number :: Parser Int
@@ -57,18 +57,18 @@ offParser = do
   _ <- string "don't()"
   return Off
 
-garbageParser :: Parser ParsedItem
-garbageParser = do
-  _ <- anyChar
-  return Garbage
-
 -- Combine parsers to parse any of the patterns
 parsedItemParser :: Parser ParsedItem
-parsedItemParser = try mulParser <|> try onParser <|> try offParser <|> garbageParser
+parsedItemParser = try mulParser <|> try onParser <|> try offParser
 
--- Parser to find all occurrences of the patterns
 findAllParsedItems :: Parser [ParsedItem]
-findAllParsedItems = many parsedItemParser
+findAllParsedItems = go []
+  where
+    go acc = do
+      result <- optionMaybe (try parsedItemParser)
+      case result of
+        Just item -> go (acc ++ [item])
+        Nothing   -> (anyChar >> go acc) <|> return acc
 
 -- Function to run the parser
 parseItems :: String -> Either ParseError [ParsedItem]
@@ -84,7 +84,6 @@ process (total, mode) item =
         (total + (l*r), mode)
       else 
         (total, mode)
-    Garbage -> (total,mode)
 
 calculate :: [ParsedItem] -> Int
 calculate items = fst calc

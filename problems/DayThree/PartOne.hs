@@ -11,14 +11,14 @@ import Data.Char (isDigit)
 -- | The type of the answer to this problem
 type Out = Int
 
-data Mul = Mul Int Int
-
 examples :: [(String, Out)]
 examples = [("input", 168539636),
             ("example", 161),
             ("test1", 10001),
             ("test2", 14),
             ("test3", 60)]
+
+data Mul = Mul Int Int
 
 data ParseState = Nostate | LNum | RNum | M | U | L | Comma | LB
   deriving Eq
