@@ -9,21 +9,20 @@ import Helpers.Solution (always)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Lib.Types (Result)
--- import Debug.Trace (traceShow)
 
 type Out = Int
 
 examples :: [(String, Out)]
 examples = [
-            -- ("input",  97529391),
-            -- ("example", 161),
-            -- ("example2", 48),
-            ("test1", 10001)
-            -- ("test2", 10001),
-            -- ("test3", 60)
+            ("input", 97529391),
+            ("example", 161),
+            ("example2", 48),
+            ("test1", 10001),
+            ("test2", 10),
+            ("test3", 60)
             ]
 
-data ParsedItem = Mul Int Int | On | Off
+data ParsedItem = Mul Int Int | On | Off | Garbage
   deriving (Show, Eq)
 
 number :: Parser Int
@@ -49,22 +48,27 @@ mulParser = do
 -- Parser for On
 onParser :: Parser ParsedItem
 onParser = do
-  _ <- string "don't()"
+  _ <- string "do()"
   return On
 
 -- Parser for Off
 offParser :: Parser ParsedItem
 offParser = do
-  _ <- string "do()"
+  _ <- string "don't()"
   return Off
+
+garbageParser :: Parser ParsedItem
+garbageParser = do
+  _ <- anyChar
+  return Garbage
 
 -- Combine parsers to parse any of the patterns
 parsedItemParser :: Parser ParsedItem
-parsedItemParser = mulParser <|> onParser <|> offParser
+parsedItemParser = try mulParser <|> try onParser <|> try offParser <|> garbageParser
 
 -- Parser to find all occurrences of the patterns
 findAllParsedItems :: Parser [ParsedItem]
-findAllParsedItems = many (parsedItemParser <* many anyChar)
+findAllParsedItems = many parsedItemParser
 
 -- Function to run the parser
 parseItems :: String -> Either ParseError [ParsedItem]
@@ -77,9 +81,10 @@ process (total, mode) item =
     Off -> (total, False)
     Mul l r -> 
       if mode then 
-        (total + l*r, mode)
+        (total + (l*r), mode)
       else 
         (total, mode)
+    Garbage -> (total,mode)
 
 calculate :: [ParsedItem] -> Int
 calculate items = fst calc
