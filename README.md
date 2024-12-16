@@ -12,6 +12,12 @@ learning Haskell.  The goals for this framework are:
 
 ## Setup
 
+### Windows notes
+
+The Makefile is not written to work on Windows. Use cabal directly. For the input you can download with the following differences:
+
+Use the command `./get.ps1 -Day 7` to get the input for a day.
+
 ### Clear Framework Level Testing
 
 Run
