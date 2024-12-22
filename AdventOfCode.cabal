@@ -160,11 +160,14 @@ test-suite test-suite
         test,
         test/5,
   main-is:             Main.hs
+  other-modules:
+        Test5,
   build-depends:
         base,
         AdventOfCode:lib,
         AdventOfCode:problems,
         HUnit,
+        containers,
 
 executable AdventOfCode
     -- Import common warning flags.
