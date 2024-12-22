@@ -154,6 +154,18 @@ library helpers
         Helpers.Input
     hs-source-dirs: helpers
 
+test-suite test-suite
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:
+        test,
+        test/5,
+  main-is:             Main.hs
+  build-depends:
+        base,
+        AdventOfCode:lib,
+        AdventOfCode:problems,
+        HUnit,
+
 executable AdventOfCode
     -- Import common warning flags.
     import:           shared-properties
