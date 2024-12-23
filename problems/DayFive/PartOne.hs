@@ -2,7 +2,7 @@
 module: DayFive.PartOne
 description: Advent of Code, Day Five, Part One
 -}
-module DayFive.PartOne(Out, solution, parseInput, parseLines) where
+module DayFive.PartOne(Out, solution, parseInput, parseLines, parseLines2) where
 
 import Lib.Solution
 import Lib.Types hiding (Parser)
@@ -34,6 +34,23 @@ parseLines :: String -> Either ParseError (Map.Map Int (Set.Set Int))
 parseLines input = case parse linesParser "" input of
     Left err -> Left err
     Right pairs -> Right (toMap pairs)
+
+intParser :: Parser Int
+intParser = read <$> many1 digit
+
+lineParser2 :: Parser [Int]
+lineParser2 = do
+    numbers <- intParser `sepBy` char ','
+    _ <- newline
+    return numbers
+
+-- Parser for multiple lines, resulting in [[Int]]
+linesParser2 :: Parser [[Int]]
+linesParser2 = many lineParser2
+
+-- Main parsing function
+parseLines2 :: String -> Either ParseError [[Int]]
+parseLines2 = parse linesParser2 ""
 
 examples :: [(String, Out)]
 examples = [("test1", 143)]
