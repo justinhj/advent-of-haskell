@@ -168,6 +168,7 @@ test-suite test-suite
         AdventOfCode:problems,
         HUnit,
         containers,
+        split,
 
 executable AdventOfCode
     -- Import common warning flags.

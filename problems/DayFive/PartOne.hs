@@ -55,8 +55,17 @@ parseLines2 = parse linesParser2 ""
 examples :: [(String, Out)]
 examples = [("test1", 143)]
 
-parseInput :: String -> Result Int
-parseInput input = Right 10
+parseInput :: String -> Result (Map.Map Int (Set.Set Int), [[Int]])
+parseInput input = do
+    let (first, second) = case splitOn "\n\n" input of
+                            [] -> ("", "")
+                            [x] -> (x, "")
+                            (x:y:_) -> (x, y)
+    mapped <- either (Left . show) Right (parseLines first)
+    seqs <- either (Left . show) Right (parseLines2 second)
+    
+    -- Here you'd typically do something with mapped and seqs, but for now, let's return a dummy result:
+    return (mapped, seqs)
 
 -- | Solution for Day Five, Part One
 solution:: AdventProblem Out
