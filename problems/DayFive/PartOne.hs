@@ -7,6 +7,7 @@ module DayFive.PartOne(Out, solution, parseInput, parseLines, parseLines2) where
 import Lib.Solution
 import Lib.Types hiding (Parser)
 import Data.List.Split (splitOn)
+import Data.Maybe (fromMaybe)
 import Helpers.Solution
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -77,7 +78,7 @@ verify after visits input = go visits input
                 else go (x:visited) xs
 
 sumMiddles :: [[Int]] -> Int
-sumMiddles = sum . map (maybe 0 id . middle)
+sumMiddles = sum . map (fromMaybe 0 . middle)
   where 
     middle :: [Int] -> Maybe Int
     middle xs 
