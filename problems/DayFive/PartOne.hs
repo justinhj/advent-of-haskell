@@ -8,6 +8,7 @@ import Lib.Solution
 import Lib.Types hiding (Parser)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromMaybe)
+import qualified Data.Bifunctor as Bifunctor
 import Helpers.Solution
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -28,7 +29,8 @@ linesParser :: Parser [(Int, Int)]
 linesParser = many (lineParser <* newline)
 
 toMap :: [(Int, Int)] -> Map.Map Int (Set.Set Int)
-toMap = Map.fromListWith Set.union . map (\(a, b) -> (a, Set.singleton b))
+-- Originally toMap = Map.fromListWith Set.union . map (\(a, b) -> (a, Set.singleton b))
+toMap = Map.fromListWith Set.union . map (Bifunctor.second Set.singleton)
 
 parseLines :: String -> Either ParseError (Map.Map Int (Set.Set Int))
 parseLines input = case parse linesParser "" input of
@@ -69,26 +71,24 @@ verify :: Map.Map Int (Set.Set Int) -> [Int] -> [Int] -> Bool
 verify after visits input = go visits input
   where
     go _ [] = True
-    go visited (x:xs) = 
+    go visited (x:xs) =
         case Map.lookup x after of
             Nothing -> go (x:visited) xs
-            Just mustComeAfter -> 
-                if any (`elem` visited) mustComeAfter 
-                then False
-                else go (x:visited) xs
+            Just mustComeAfter ->
+                not (any (`elem` visited) mustComeAfter) && go (x:visited) xs
 
 sumMiddles :: [[Int]] -> Int
 sumMiddles = sum . map (fromMaybe 0 . middle)
-  where 
+  where
     middle :: [Int] -> Maybe Int
-    middle xs 
+    middle xs
       | null xs   = Nothing
       | otherwise = Just $ xs !! (length xs `div` 2)
 
 solve :: (Map.Map Int (Set.Set Int), [[Int]]) -> Out
 solve (seconds, seqs) = sumMiddles filtered
   where
-    filtered = filter (\a -> verify seconds [] a) seqs
+    filtered = filter (verify seconds []) seqs
 
 -- | Solution for Day Five, Part One
 solution:: AdventProblem Out
