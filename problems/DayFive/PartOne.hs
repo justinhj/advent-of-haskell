@@ -61,12 +61,27 @@ parseInput input = do
                             [] -> ("", "")
                             [x] -> (x, "")
                             (x:y:_) -> (x, y)
-    mapped <- either (Left . show) Right (parseLines first)
+    mapped <- either (Left . show) Right (parseLines (first ++ "\n"))
     seqs <- either (Left . show) Right (parseLines2 second)
-    
-    -- Here you'd typically do something with mapped and seqs, but for now, let's return a dummy result:
     return (mapped, seqs)
+
+verify :: Map.Map Int (Set.Set Int) -> [Int] -> [Int] -> Bool
+verify after visits input = go visits input
+  where
+    go _ [] = True  -- Base case: if the input list is empty, return True
+    go visited (x:xs) = 
+        case Map.lookup x after of
+            Nothing -> go (x:visited) xs  -- If x isn't in after, just proceed
+            Just mustComeAfter -> 
+                if any (`elem` visited) mustComeAfter 
+                then False  -- If any number that must come after x has already been seen, return False
+                else go (x:visited) xs  -- Otherwise, proceed by adding x to visited
+
+solve :: (Map.Map Int (Set.Set Int), [[Int]]) -> Out
+solve (seconds, seqs) = length seqs -- filtered
+  where
+    filtered = filter (\a -> verify seconds [] a) seqs
 
 -- | Solution for Day Five, Part One
 solution:: AdventProblem Out
-solution = adventOfCode examples parseInput (nyi "Solution")
+solution = adventOfCode examples parseInput (always solve)
