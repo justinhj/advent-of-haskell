@@ -6,7 +6,6 @@ module DayFive.PartOne(Out, solution, parseInput, parseLines, parseLines2) where
 
 import Lib.Solution
 import Lib.Types hiding (Parser)
-import Lib.Types hiding (Parser)
 import Data.List.Split (splitOn)
 import Helpers.Solution
 import qualified Data.Map as Map
@@ -28,7 +27,7 @@ linesParser :: Parser [(Int, Int)]
 linesParser = many (lineParser <* newline)
 
 toMap :: [(Int, Int)] -> Map.Map Int (Set.Set Int)
-toMap = Map.fromListWith Set.union . map (\(a, b) -> (b, Set.singleton a))
+toMap = Map.fromListWith Set.union . map (\(a, b) -> (a, Set.singleton b))
 
 parseLines :: String -> Either ParseError (Map.Map Int (Set.Set Int))
 parseLines input = case parse linesParser "" input of
@@ -53,7 +52,7 @@ parseLines2 :: String -> Either ParseError [[Int]]
 parseLines2 = parse linesParser2 ""
 
 examples :: [(String, Out)]
-examples = [("test1", 143)]
+examples = [("test1", 143), ("input",5452)]
 
 parseInput :: String -> Result (Map.Map Int (Set.Set Int), [[Int]])
 parseInput input = do
@@ -68,17 +67,25 @@ parseInput input = do
 verify :: Map.Map Int (Set.Set Int) -> [Int] -> [Int] -> Bool
 verify after visits input = go visits input
   where
-    go _ [] = True  -- Base case: if the input list is empty, return True
+    go _ [] = True
     go visited (x:xs) = 
         case Map.lookup x after of
-            Nothing -> go (x:visited) xs  -- If x isn't in after, just proceed
+            Nothing -> go (x:visited) xs
             Just mustComeAfter -> 
                 if any (`elem` visited) mustComeAfter 
-                then False  -- If any number that must come after x has already been seen, return False
-                else go (x:visited) xs  -- Otherwise, proceed by adding x to visited
+                then False
+                else go (x:visited) xs
+
+sumMiddles :: [[Int]] -> Int
+sumMiddles = sum . map (maybe 0 id . middle)
+  where 
+    middle :: [Int] -> Maybe Int
+    middle xs 
+      | null xs   = Nothing
+      | otherwise = Just $ xs !! (length xs `div` 2)
 
 solve :: (Map.Map Int (Set.Set Int), [[Int]]) -> Out
-solve (seconds, seqs) = length seqs -- filtered
+solve (seconds, seqs) = sumMiddles filtered
   where
     filtered = filter (\a -> verify seconds [] a) seqs
 
