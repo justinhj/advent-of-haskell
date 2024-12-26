@@ -41,7 +41,7 @@ test2 = "75,47,61,53,29\n\
 
 
 parsed = parseLines test1
-expectedSet_61 = Just $ Set.fromList [97,47,75]
+expectedSet_61 = Just $ Set.fromList [13,29,53]
 
 parsed2 = parseLines2 test2
 
