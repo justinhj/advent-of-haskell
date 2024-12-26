@@ -1,6 +1,6 @@
 module Test4 (test4) where
 
-import DayFour.PartOne (parse)
+import DayFour.PartOne (parse, solve)
 import Test.HUnit
 import Data.Array
 
@@ -23,7 +23,9 @@ test4 = TestList [
   TestCase (assertEqual "M is 1" 1 (parsed ! (0,0))),
   TestCase (assertEqual "X is 0" 0 (parsed ! (0,4))),
   TestCase (assertEqual "A is 2" 2 (parsed ! (1,9))),
-  TestCase (assertEqual "S is 3" 3 (parsed ! (1,1)))
+  TestCase (assertEqual "S is 3" 3 (parsed ! (1,1))),
+
+  TestCase (assertEqual "XMAS count is 18" 18 (solve parsed))
   ]
 
 
