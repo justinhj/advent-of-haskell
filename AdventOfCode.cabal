@@ -35,10 +35,10 @@ license:            GPL-3.0-or-later
 license-file:       LICENSE
 
 -- The package author(s).
-author:             Your Name
+author:             Justin Heyes-Jones
 
 -- An email address to which users can send suggestions, bug reports, and patches.
-maintainer:         haha@no.dont
+maintainer:         justinhj@gmail.com
 
 -- A copyright notice.
 -- copyright:
@@ -87,6 +87,7 @@ library problems
         --Add your dependencies here, with trailing commas
         containers,
         parsec,
+        array,
     exposed-modules:
         DayOne.PartOne
         DayOne.PartTwo
