@@ -16,7 +16,7 @@ import Text.Parsec
 import Text.Parsec.String
 
 examples :: [(String, Out)]
-examples = [("test1", 123), ("input",0)]
+examples = [("test1", 123), ("input",4598)]
 
 -- | The type of the answer to this problem
 type Out = Int
