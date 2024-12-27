@@ -14,7 +14,7 @@ type Out = Int
 examples :: [(String, Out)]
 examples = [
     ("example", 18),
-    ("input", 0)
+    ("input", 2458)
   ]
 
 listTo2DArray :: [[a]] -> Array (Int, Int) a
