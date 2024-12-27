@@ -64,5 +64,13 @@ test5 = TestList [
     TestCase $
       case (parsed, parsed2) of
         (Right afters, Right seqs) -> assertEqual "s4 bad" False (P1.verify afters [] (seqs !! 4))
+        _ -> assertFailure "Parsing failed",
+    TestCase $
+      case (parsed, parsed2) of
+        (Right afters, Right seqs) -> assertEqual "should swap 1" (Just (29, 13)) (P2.shouldSwap afters [] (seqs !! 4))
+        _ -> assertFailure "Parsing failed",
+    TestCase $
+      case (parsed, parsed2) of
+        (Right afters, Right seqs) -> assertEqual "can fix" [61, 29, 13] (P2.fix afters (seqs !! 4))
         _ -> assertFailure "Parsing failed"
         ]
