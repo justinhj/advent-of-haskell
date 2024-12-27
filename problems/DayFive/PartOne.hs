@@ -2,7 +2,7 @@
 module: DayFive.PartOne
 description: Advent of Code, Day Five, Part One
 -}
-module DayFive.PartOne(Out, solution, parseInput, parseLines, parseLines2) where
+module DayFive.PartOne(Out, solution, parseInput, parseLines, parseLines2, verify) where
 
 import Lib.Solution
 import Lib.Types hiding (Parser)

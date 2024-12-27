@@ -15,6 +15,9 @@ import qualified Data.Set as Set
 import Text.Parsec
 import Text.Parsec.String
 
+examples :: [(String, Out)]
+examples = [("test1", 123), ("input",0)]
+
 -- | The type of the answer to this problem
 type Out = Int
 
@@ -29,7 +32,6 @@ linesParser :: Parser [(Int, Int)]
 linesParser = many (lineParser <* newline)
 
 toMap :: [(Int, Int)] -> Map.Map Int (Set.Set Int)
--- Originally toMap = Map.fromListWith Set.union . map (\(a, b) -> (a, Set.singleton b))
 toMap = Map.fromListWith Set.union . map (Bifunctor.second Set.singleton)
 
 parseLines :: String -> Either ParseError (Map.Map Int (Set.Set Int))
@@ -54,9 +56,6 @@ linesParser2 = many lineParser2
 parseLines2 :: String -> Either ParseError [[Int]]
 parseLines2 = parse linesParser2 ""
 
-examples :: [(String, Out)]
-examples = [("test1", 143), ("input",5452)]
-
 parseInput :: String -> Result (Map.Map Int (Set.Set Int), [[Int]])
 parseInput input = do
     let (first, second) = case splitOn "\n\n" input of
@@ -77,6 +76,20 @@ verify after visits input = go visits input
             Just mustComeAfter ->
                 not (any (`elem` visited) mustComeAfter) && go (x:visited) xs
 
+shouldSwap :: Map.Map Int (Set.Set Int) -> [Int] -> [Int] -> Maybe (Int,Int)
+shouldSwap = undefined
+-- shouldSwap after visits input = go visits input
+--   where
+--     go _ [] = Nothing
+--     go visited (x:xs) =
+--         case Map.lookup x after of
+--             Nothing -> go (x:visited) xs
+--             Just mustComeAfter ->
+--               if any (`elem` visited) mustComeAfter then
+--                 Just (x, mustComeAfter)
+--               else
+--                 go (x:visited) xs
+
 sumMiddles :: [[Int]] -> Int
 sumMiddles = sum . map (fromMaybe 0 . middle)
   where
@@ -85,10 +98,16 @@ sumMiddles = sum . map (fromMaybe 0 . middle)
       | null xs   = Nothing
       | otherwise = Just $ xs !! (length xs `div` 2)
 
+fix :: Map.Map Int (Set.Set Int) -> [Int] -> [Int]
+fix seconds = undefined
+
+fixAll :: Map.Map Int (Set.Set Int) -> [[Int]] -> [[Int]]
+fixAll seconds = map (\a -> fix seconds a)
+
 solve :: (Map.Map Int (Set.Set Int), [[Int]]) -> Out
 solve (seconds, seqs) = sumMiddles filtered
   where
-    filtered = filter (verify seconds []) seqs
+    filtered = filter (not . verify seconds []) seqs
 
 -- | Solution for Day Five, Part One
 solution:: AdventProblem Out

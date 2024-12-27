@@ -1,6 +1,7 @@
 module Test5 (test5) where
 
-import DayFive.PartOne (parseInput, parseLines, parseLines2)
+import qualified DayFive.PartOne as P1
+import qualified DayFive.PartTwo as P2
 import Test.HUnit
 import Data.Either (isRight)
 import Data.Map (lookup)
@@ -40,10 +41,10 @@ test2 = "75,47,61,53,29\n\
         \97,13,75,29,47\n"
 
 
-parsed = parseLines test1
+parsed = P1.parseLines test1
 expectedSet_61 = Just $ Set.fromList [13,29,53]
 
-parsed2 = parseLines2 test2
+parsed2 = P1.parseLines2 test2
 
 test5 :: Test
 test5 = TestList [
@@ -55,5 +56,13 @@ test5 = TestList [
     TestCase $
       case parsed2 of
         Right l -> assertEqual "test2 has right number of sequences" 6 (length l)
-        Left err -> assertFailure ("Parsing failed: " ++ show err)
-  ]
+        Left err -> assertFailure ("Parsing failed: " ++ show err),
+    TestCase $
+      case (parsed, parsed2) of
+        (Right afters, Right seqs) -> assertEqual "s1 good" True (P1.verify afters [] (head seqs))
+        _ -> assertFailure "Parsing failed",
+    TestCase $
+      case (parsed, parsed2) of
+        (Right afters, Right seqs) -> assertEqual "s4 bad" False (P1.verify afters [] (seqs !! 4))
+        _ -> assertFailure "Parsing failed"
+        ]
