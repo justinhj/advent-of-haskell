@@ -35,7 +35,7 @@ listTo2DArray xs = listArray ((0, 0), (rows - 1, cols - 1)) (concat xs)
     cols = length (head xs)
 
 examples :: [(String, Out)]
-examples = [("test", 41), ("input", 0)]
+examples = [("test", 41), ("input", 5239)]
 
 parse :: String -> Array (Int, Int) Loc
 parse content = listTo2DArray $ parseMap content
