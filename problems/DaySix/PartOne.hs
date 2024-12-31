@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant if" #-}
 {-|
 module: DaySix.PartOne
 description: Advent of Code, Day Six, Part One
@@ -44,29 +46,29 @@ score :: Array (Int, Int) Loc -> Int
 score arr = length [(i, j) | ((i, j), loc) <- assocs arr, loc == VISITED]
 
 search :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> (Int, Array (Int, Int) Loc)
-search spot d m = 
-  if not (inRange (bounds m) spot) then (score m, m)
-  else if ifForwardBlocked spot then 
-    search spot (turnRight d) m
-  else
-    let newSpot = moveForward spot d in
-    search newSpot d (m // [(spot, VISITED)])
+search spot d m
+  | not (inRange (bounds m) spot) = (score m, m)
+  | ifForwardBlocked spot = search spot (turnRight d) m
+  | otherwise = let newSpot = moveForward spot d in
+                search newSpot d (m // [(spot, VISITED)])
   where
-    moveForward (i, j) N = (i-1, j)
-    moveForward (i, j) E = (i, j+1)
-    moveForward (i, j) S = (i+1, j)
-    moveForward (i, j) W = (i, j-1)
+      moveForward (i, j) N = (i - 1, j)
+      moveForward (i, j) E = (i, j + 1)
+      moveForward (i, j) S = (i + 1, j)
+      moveForward (i, j) W = (i, j - 1)
 
-    turnRight N = E
-    turnRight E = S
-    turnRight S = W
-    turnRight W = N
+      turnRight N = E
+      turnRight E = S
+      turnRight S = W
+      turnRight W = N
 
-    ifForwardBlocked (i, j) =
-      let newSpot = moveForward (i, j) d in
-      if not (inRange (bounds m) newSpot) then False
-      else
-        m ! moveForward newSpot d == BLOCKED
+      ifForwardBlocked (i, j)
+        = let newSpot = moveForward (i, j) d
+          in
+            if not (inRange (bounds m) newSpot) then
+                False
+            else
+                m ! moveForward newSpot d == BLOCKED
 
 solve :: Array (Int, Int) Loc -> Int
 solve m = fst (search (guardStart m) N m)
