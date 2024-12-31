@@ -9,6 +9,7 @@ module DaySix.PartOne(Out, solution) where
 import Lib.Solution
 import Helpers.Solution
 import Data.Array
+import Debug.Trace
 
 -- | The type of the answer to this problem
 type Out = Int
@@ -40,7 +41,9 @@ parse :: String -> Array (Int, Int) Loc
 parse content = listTo2DArray $ parseMap content
 
 guardStart :: Array (Int, Int) Loc -> (Int, Int)
-guardStart arr = head [(i, j) | ((i, j), loc) <- assocs arr, loc == GUARD]
+guardStart arr = case [(i, j) | ((i, j), loc) <- assocs arr, loc == GUARD] of
+        [] -> error "No guard found in array"
+        (pos:_) -> pos
 
 score :: Array (Int, Int) Loc -> Int
 score arr = length [(i, j) | ((i, j), loc) <- assocs arr, loc == VISITED]
