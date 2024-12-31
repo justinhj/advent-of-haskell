@@ -9,7 +9,6 @@ module DaySix.PartOne(Out, solution) where
 import Lib.Solution
 import Helpers.Solution
 import Data.Array
-import Debug.Trace
 
 -- | The type of the answer to this problem
 type Out = Int
@@ -26,7 +25,7 @@ parseMap str = map (map charToLoc) (lines str)
     charToLoc '.' = EMPTY
     charToLoc '#' = BLOCKED
     charToLoc '^' = GUARD
-    charToLoc _   = EMPTY  -- Default case for any other character
+    charToLoc _   = EMPTY -- Keep the pattern matching exhaustive
 
 listTo2DArray :: [[a]] -> Array (Int, Int) a
 listTo2DArray xs = listArray ((0, 0), (rows - 1, cols - 1)) (concat xs)
