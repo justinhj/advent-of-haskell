@@ -34,7 +34,7 @@ listTo2DArray xs = listArray ((0, 0), (rows - 1, cols - 1)) (concat xs)
     cols = length (head xs)
 
 examples :: [(String, Out)]
-examples = [("test", 41)]
+examples = [("test", 41), ("input", 0)]
 
 parse :: String -> Array (Int, Int) Loc
 parse content = listTo2DArray $ parseMap content
@@ -68,7 +68,8 @@ search spot d m
             if not (inRange (bounds m) newSpot) then
                 False
             else
-                m ! moveForward newSpot d == BLOCKED
+                let content = m ! newSpot in
+                content == BLOCKED
 
 solve :: Array (Int, Int) Loc -> Int
 solve m = fst (search (guardStart m) N m)
