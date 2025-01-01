@@ -77,11 +77,57 @@ search spot d m
                 let content = m ! newSpot in
                 content == BLOCKED
 
+searchStep :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> (Int,Int)
+searchStep spot d m
+  | not (inRange (bounds m) spot) = spot
+  | ifForwardBlocked spot = searchStep spot (turnRight d) m
+  | otherwise = let newSpot = moveForward spot d in
+                searchStep newSpot d m
+  where
+      moveForward (i, j) N = (i - 1, j)
+      moveForward (i, j) E = (i, j + 1)
+      moveForward (i, j) S = (i + 1, j)
+      moveForward (i, j) W = (i, j - 1)
+
+      turnRight N = E
+      turnRight E = S
+      turnRight S = W
+      turnRight W = N
+
+      ifForwardBlocked (i, j)
+        = let newSpot = moveForward (i, j) d
+          in
+            if not (inRange (bounds m) newSpot) then
+                False
+            else
+                let content = m ! newSpot in
+                content == BLOCKED
+
+testBlockPositionHelper :: Array (Int, Int) Loc -> (Int, Int) -> Dir -> (Int, Int) -> Dir -> Bool
+testBlockPositionHelper m spot1 d1 spot2 d2 
+  | not (inRange (bounds m) spot1) = False
+  | not (inRange (bounds m) spot2) = False
+  | newSpot1 == newSpot2 = True
+  | otherwise = testBlockPositionHelper m newSpot1 d1 newSpot2 d2
+
+  where
+    newSpot1' = searchStep spot1 d1 m
+    newSpot1 = searchStep newSpot1' d1 m
+    newSpot2 = searchStep spot2 d2 m
+
+testBlockPosition :: Array (Int, Int) Loc -> (Int, Int) -> (Int, Int) -> Bool
+testBlockPosition m bp gs = testBlockPositionHelper blockedMap gs N gs N 
+  where
+    blockedMap = m // [(bp, BLOCKED)]
+    
+
 solve :: Array (Int, Int) Loc -> Int
 solve m = 10
   where 
-    (_, filledMap) = search (guardStart m) N m
-    vps = visitedPositions filledMap
+    gs = guardStart m
+    (_, filledMap) = search gs N m
+    vps = Set.delete gs (visitedPositions filledMap)
+    blockedPositions = map (testBlockPosition  
 
 solution:: AdventProblem Out
 solution = adventOfCode examples (always parse) (always solve)
