@@ -18,7 +18,7 @@ data Loc = EMPTY | BLOCKED | GUARD | VISITED
     deriving (Show, Eq)
 
 data Dir = N | E | S | W
-    deriving (Show, Eq)
+    deriving (Show, Eq, Ord)
 
 parseMap :: String -> [[Loc]]
 parseMap str = map (map charToLoc) (lines str)
@@ -35,7 +35,7 @@ listTo2DArray xs = listArray ((0, 0), (rows - 1, cols - 1)) (concat xs)
     cols = length (head xs)
 
 examples :: [(String, Out)]
-examples = [("test", 6), ("input", 0)]
+examples = [("test", 6), ("input", 1753)]
 
 parse :: String -> Array (Int, Int) Loc
 parse content = listTo2DArray $ parseMap content
@@ -103,20 +103,17 @@ searchStep spot d m
                 let content = m ! newSpot in
                 content == BLOCKED
 
-testBlockPositionHelper :: Array (Int, Int) Loc -> (Int, Int) -> Dir -> (Int, Int) -> Dir -> Bool
-testBlockPositionHelper m spot1 d1 spot2 d2 
-  | not (inRange (bounds m) spot1) = False
-  | not (inRange (bounds m) spot2) = False
-  | (newSpot1 == newSpot2) && (d1 == d2) = True
-  | otherwise = testBlockPositionHelper m newSpot1 newD1 newSpot2 newD2
-
+-- Do the search but tracking positions and directions and watching for a loop
+testBlockPositionHelper :: Array (Int, Int) Loc -> (Int, Int) -> Dir -> Set.Set ((Int, Int), Dir) -> Bool
+testBlockPositionHelper m spot d visited
+  | not (inRange (bounds m) spot) = False
+  | Set.member (spot, d) visited = True
+  | otherwise = testBlockPositionHelper m newSpot newD (Set.insert (spot, d) visited)
   where
-    (newSpot1', newD1') = searchStep spot1 d1 m
-    (newSpot1, newD1) = searchStep newSpot1' newD1' m
-    (newSpot2, newD2) = searchStep spot2 d2 m
+    (newSpot, newD) = searchStep spot d m
 
 testBlockPosition :: Array (Int, Int) Loc -> (Int, Int) -> (Int, Int) -> Bool
-testBlockPosition m gs bp = testBlockPositionHelper blockedMap gs N gs N 
+testBlockPosition m gs bp = testBlockPositionHelper blockedMap gs N Set.empty
   where
     blockedMap = m // [(bp, BLOCKED)]
     
