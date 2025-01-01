@@ -77,12 +77,12 @@ search spot d m
                 let content = m ! newSpot in
                 content == BLOCKED
 
-searchStep :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> (Int,Int)
+searchStep :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> ((Int,Int), Dir)
 searchStep spot d m
-  | not (inRange (bounds m) spot) = spot
+  | not (inRange (bounds m) spot) = (spot, d)
   | ifForwardBlocked spot = searchStep spot (turnRight d) m
   | otherwise = let newSpot = moveForward spot d in
-                searchStep newSpot d m
+                (newSpot, d)
   where
       moveForward (i, j) N = (i - 1, j)
       moveForward (i, j) E = (i, j + 1)
@@ -107,13 +107,13 @@ testBlockPositionHelper :: Array (Int, Int) Loc -> (Int, Int) -> Dir -> (Int, In
 testBlockPositionHelper m spot1 d1 spot2 d2 
   | not (inRange (bounds m) spot1) = False
   | not (inRange (bounds m) spot2) = False
-  | newSpot1 == newSpot2 = True
-  | otherwise = testBlockPositionHelper m newSpot1 d1 newSpot2 d2
+  | (newSpot1 == newSpot2) && (d1 == d2) = True
+  | otherwise = testBlockPositionHelper m newSpot1 newD1 newSpot2 newD2
 
   where
-    newSpot1' = searchStep spot1 d1 m
-    newSpot1 = searchStep newSpot1' d1 m
-    newSpot2 = searchStep spot2 d2 m
+    (newSpot1', newD1') = searchStep spot1 d1 m
+    (newSpot1, newD1) = searchStep newSpot1' newD1' m
+    (newSpot2, newD2) = searchStep spot2 d2 m
 
 testBlockPosition :: Array (Int, Int) Loc -> (Int, Int) -> (Int, Int) -> Bool
 testBlockPosition m gs bp = testBlockPositionHelper blockedMap gs N gs N 
