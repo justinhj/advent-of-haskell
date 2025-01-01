@@ -51,57 +51,42 @@ visitedPositions arr = Set.fromList [(i, j) | ((i, j), loc) <- assocs arr, loc =
 score :: Array (Int, Int) Loc -> Int
 score arr = length $ visitedPositions arr
 
+
+moveForward :: (Int,Int) -> Dir -> (Int,Int)
+moveForward (i, j) N = (i - 1, j)
+moveForward (i, j) E = (i, j + 1)
+moveForward (i, j) S = (i + 1, j)
+moveForward (i, j) W = (i, j - 1)
+
+turnRight :: Dir -> Dir
+turnRight N = E
+turnRight E = S
+turnRight S = W
+turnRight W = N
+
+ifForwardBlocked :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> Bool
+ifForwardBlocked (i, j) d m =
+  let newSpot = moveForward (i, j) d
+    in
+      if not (inRange (bounds m) newSpot) then
+          False
+      else
+          let content = m ! newSpot in
+          content == BLOCKED
+
 search :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> (Int, Array (Int, Int) Loc)
 search spot d m
   | not (inRange (bounds m) spot) = (score m, m)
-  | ifForwardBlocked spot = search spot (turnRight d) m
+  | ifForwardBlocked spot d m = search spot (turnRight d) m
   | otherwise = let newSpot = moveForward spot d in
                 search newSpot d (m // [(spot, VISITED)])
-  where
-      moveForward (i, j) N = (i - 1, j)
-      moveForward (i, j) E = (i, j + 1)
-      moveForward (i, j) S = (i + 1, j)
-      moveForward (i, j) W = (i, j - 1)
-
-      turnRight N = E
-      turnRight E = S
-      turnRight S = W
-      turnRight W = N
-
-      ifForwardBlocked (i, j)
-        = let newSpot = moveForward (i, j) d
-          in
-            if not (inRange (bounds m) newSpot) then
-                False
-            else
-                let content = m ! newSpot in
-                content == BLOCKED
 
 searchStep :: (Int, Int) -> Dir -> Array (Int, Int) Loc -> ((Int,Int), Dir)
 searchStep spot d m
   | not (inRange (bounds m) spot) = (spot, d)
-  | ifForwardBlocked spot = searchStep spot (turnRight d) m
+  | ifForwardBlocked spot d m = searchStep spot (turnRight d) m
   | otherwise = let newSpot = moveForward spot d in
                 (newSpot, d)
-  where
-      moveForward (i, j) N = (i - 1, j)
-      moveForward (i, j) E = (i, j + 1)
-      moveForward (i, j) S = (i + 1, j)
-      moveForward (i, j) W = (i, j - 1)
-
-      turnRight N = E
-      turnRight E = S
-      turnRight S = W
-      turnRight W = N
-
-      ifForwardBlocked (i, j)
-        = let newSpot = moveForward (i, j) d
-          in
-            if not (inRange (bounds m) newSpot) then
-                False
-            else
-                let content = m ! newSpot in
-                content == BLOCKED
 
 -- Do the search but tracking positions and directions and watching for a loop
 testBlockPositionHelper :: Array (Int, Int) Loc -> (Int, Int) -> Dir -> Set.Set ((Int, Int), Dir) -> Bool
