@@ -116,18 +116,18 @@ testBlockPositionHelper m spot1 d1 spot2 d2
     newSpot2 = searchStep spot2 d2 m
 
 testBlockPosition :: Array (Int, Int) Loc -> (Int, Int) -> (Int, Int) -> Bool
-testBlockPosition m bp gs = testBlockPositionHelper blockedMap gs N gs N 
+testBlockPosition m gs bp = testBlockPositionHelper blockedMap gs N gs N 
   where
     blockedMap = m // [(bp, BLOCKED)]
     
 
 solve :: Array (Int, Int) Loc -> Int
-solve m = 10
+solve m = length $ filter id blockedPositions
   where 
     gs = guardStart m
     (_, filledMap) = search gs N m
-    vps = Set.delete gs (visitedPositions filledMap)
-    blockedPositions = map (testBlockPosition  
+    vps = Set.toList $ Set.delete gs (visitedPositions filledMap)
+    blockedPositions = map (testBlockPosition m gs) vps
 
 solution:: AdventProblem Out
 solution = adventOfCode examples (always parse) (always solve)
