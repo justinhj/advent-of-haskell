@@ -71,7 +71,37 @@ const Position = struct {
     col: usize,
 };
 
-fn guardStart(grid: [][]Loc) !Position {
+fn moveForward(pos: Position, dir: Dir) Position {
+    return switch (dir) {
+        .N => Position{ .row = pos.row -| 1, .col = pos.col },
+        .E => Position{ .row = pos.row, .col = pos.col +| 1 },
+        .S => Position{ .row = pos.row +| 1, .col = pos.col },
+        .W => Position{ .row = pos.row, .col = pos.col -| 1 },
+    };
+}
+
+fn turnRight(dir: Dir) Dir {
+    return switch (dir) {
+        .N => .E,
+        .E => .S,
+        .S => .W,
+        .W => .N,
+    };
+}
+
+fn isForwardBlocked(pos: Position, dir: Dir, grid: [][]Loc) bool {
+    const new_pos = moveForward(pos, dir);
+
+    // First check if the new position is in bounds
+    if (new_pos.row >= grid.len or new_pos.col >= grid[0].len) {
+        return false;
+    }
+
+    // Check if the location is blocked
+    return grid[new_pos.row][new_pos.col] == Loc.BLOCKED;
+}
+
+fn guardStart(grid: [][]Loc) Position {
     for (grid, 0..) |row, row_index| {
         for (row, 0..) |loc, col_index| {
             if (loc == Loc.GUARD) {
@@ -79,7 +109,52 @@ fn guardStart(grid: [][]Loc) !Position {
             }
         }
     }
-    return error.Generic;
+    return Position{ .row = 0, .col = 0 };
+}
+
+fn positionToKey(pos: Position) u64 {
+    return (@as(u64, pos.row) << 32) | pos.col;
+}
+
+fn visitedPositions(allocator: std.mem.Allocator, grid: [][]Loc) !std.AutoHashMap(u64, void) {
+    var visited = std.AutoHashMap(u64, void).init(allocator);
+
+    for (grid, 0..) |row, i| {
+        for (row, 0..) |loc, j| {
+            if (loc == Loc.VISITED) {
+                const pos = Position{ .row = i, .col = j };
+                try visited.put(positionToKey(pos), {});
+            }
+        }
+    }
+    return visited;
+}
+
+fn score(allocator: std.mem.Allocator, grid: [][]Loc) usize {
+    var visited = visitedPositions(allocator, grid) catch {
+        // If allocation fails, return 0 as a safe default
+        return 0;
+    };
+    defer visited.deinit();
+    return visited.count();
+}
+
+fn search(allocator: std.mem.Allocator, pos: Position, dir: Dir, grid: [][]Loc) struct { score: usize, grid: [][]Loc } {
+    // Check if position is out of bounds
+    if (pos.row >= grid.len or pos.col >= grid[0].len) {
+        return .{ .score = score(allocator, grid), .grid = grid };
+    }
+
+    // Check if forward is blocked
+    if (isForwardBlocked(pos, dir, grid)) {
+        return search(allocator, pos, turnRight(dir), grid);
+    }
+
+    // Not blocked, so mark current spot as visited and move forward
+    grid[pos.row][pos.col] = Loc.VISITED;
+    const new_pos = moveForward(pos, dir);
+
+    return search(allocator, new_pos, dir, grid);
 }
 
 /// Loads the content of a file into a string using the provided allocator.
@@ -92,6 +167,14 @@ fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     const file_size = try file.getEndPos();
     const file_content = try file.readToEndAlloc(allocator, file_size);
     return file_content;
+}
+
+pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) usize {
+    const gs = guardStart(grid);
+
+    const searchResult = search(allocator, gs, Dir.N, grid);
+
+    return searchResult.score;
 }
 
 pub fn main() !void {
@@ -133,4 +216,7 @@ pub fn main() !void {
         }
         try stdout.print("\n", .{});
     }
+
+    const result = solve(allocator, grid);
+    try stdout.print("Result: {d}\n", .{result});
 }
