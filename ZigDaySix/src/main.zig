@@ -66,6 +66,22 @@ fn freeGrid(allocator: std.mem.Allocator, grid: [][]Loc) void {
     allocator.free(grid);
 }
 
+const Position = struct {
+    row: usize,
+    col: usize,
+};
+
+fn guardStart(grid: [][]Loc) !Position {
+    for (grid, 0..) |row, row_index| {
+        for (row, 0..) |loc, col_index| {
+            if (loc == Loc.GUARD) {
+                return Position{ .row = row_index, .col = col_index };
+            }
+        }
+    }
+    return error.Generic;
+}
+
 /// Loads the content of a file into a string using the provided allocator.
 fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     // Open the file
