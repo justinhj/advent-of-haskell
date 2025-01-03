@@ -16,6 +16,16 @@ const Dir = enum {
     W,
 };
 
+const Position = struct {
+    row: usize,
+    col: usize,
+};
+
+const PositionAndDir = struct {
+    pos: Position,
+    dir: Dir,
+};
+
 /// Parses a string into a 2D array of `Loc`.
 /// The caller is responsible for freeing the allocated memory.
 fn parseGrid(allocator: std.mem.Allocator, input: []const u8) ![][]Loc {
@@ -65,11 +75,6 @@ fn freeGrid(allocator: std.mem.Allocator, grid: [][]Loc) void {
     }
     allocator.free(grid);
 }
-
-const Position = struct {
-    row: usize,
-    col: usize,
-};
 
 fn moveForward(pos: Position, dir: Dir) Position {
     return switch (dir) {
@@ -208,6 +213,7 @@ fn searchStep(
     // Recursive call with updated position and grid
     return try search(allocator, new_pos, dir, grid);
 }
+
 /// Loads the content of a file into a string using the provided allocator.
 fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     // Open the file
@@ -220,6 +226,56 @@ fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     return file_content;
 }
 
+fn testBlockPositionHelper(
+    allocator: std.mem.Allocator,
+    m: [][]Loc,
+    spot: Position,
+    dir: Dir,
+    visited: *std.AutoHashMap(PositionAndDir, void),
+) bool {
+    // Check if position is out of bounds
+    if (spot.row >= m.len or spot.col >= m[0].len) {
+        return false;
+    }
+
+    // Check if the (spot, dir) pair is in the visited set
+    const key = .{ spot, dir };
+    if (visited.contains(key)) return true;
+
+    // Insert the current (spot, dir) pair into the visited set
+    visited.put(key, {}) catch unreachable;
+
+    // Get the new spot and direction using searchStep
+    const result = searchStep(m, spot, dir);
+    const newSpot = result[0];
+    const newDir = result[1];
+
+    return testBlockPositionHelper(allocator, m, newSpot, newDir, visited);
+}
+
+// testBlockPosition function
+fn testBlockPosition(
+    allocator: std.mem.Allocator,
+    m: [][]Loc,
+    gs: Position,
+    bp: Position,
+) bool {
+    var blockedMap = allocator.alloc([]Loc, m.len) catch unreachable;
+    for (blockedMap, m) |*row, originalRow| {
+        row.* = allocator.dupe(Loc, originalRow) catch unreachable;
+    }
+    defer {
+        for (blockedMap) |row| allocator.free(row);
+        allocator.free(blockedMap);
+    }
+    blockedMap[bp.row][bp.col] = Loc.BLOCKED;
+
+    var visited = std.AutoHashMap(PositionAndDir, void).init(allocator);
+    defer visited.deinit();
+
+    return testBlockPositionHelper(allocator, blockedMap, gs, Dir.N, &visited);
+}
+
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     const gs = try guardStart(grid);
     const searchResult = try search(allocator, gs, Dir.N, grid);
@@ -229,11 +285,15 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     _ = vps.remove(positionToKey(gs));
 
     var it = vps.keyIterator();
+    var blockedCount: usize = 0;
     while (it.next()) |key| {
         const blockPosition = keyToPosition(key.*);
-        _ = blockPosition;
+        const t = testBlockPosition(allocator, grid, gs, blockPosition);
+        if (t) {
+            blockedCount += 1;
+        }
     }
-    return searchResult.score;
+    return blockedCount;
 }
 
 pub fn main() !void {
