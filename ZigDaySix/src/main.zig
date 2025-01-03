@@ -186,33 +186,23 @@ fn search(
 }
 
 fn searchStep(
-    allocator: std.mem.Allocator,
     pos: Position,
     dir: Dir,
-    grid: [][]Loc, // Mutable reference to grid
-) !PositionAndDir {
-    if (grid.len == 0 or grid[0].len == 0) {
-        return error.InvalidGrid;
-    }
-
-    // Check if position is out of bounds
+    grid: [][]Loc,
+) PositionAndDir {
     if (pos.row >= grid.len or pos.col >= grid[0].len or pos.row < 0 or pos.col < 0) {
         return .{ .pos = pos, .dir = dir };
     }
 
     if (isForwardBlocked(pos, dir, grid)) {
-        return try searchStep(allocator, pos, turnRight(dir), grid);
+        return searchStep(pos, turnRight(dir), grid);
     }
 
-    // Move forward
     const new_pos = moveForward(pos, dir);
-
-    // Recursive call with updated position and grid
-    return try searchStep(allocator, new_pos, dir, grid);
+    return searchStep(new_pos, dir, grid);
 }
 
 fn testBlockPositionHelper(
-    allocator: std.mem.Allocator,
     m: [][]Loc,
     spot: Position,
     dir: Dir,
@@ -222,20 +212,19 @@ fn testBlockPositionHelper(
     if (spot.row >= m.len or spot.col >= m[0].len) {
         return false;
     }
-
     // Check if the (spot, dir) pair is in the visited set
-    const key = .{ spot, dir };
+    const key = PositionAndDir{ .pos = spot, .dir = dir };
     if (visited.contains(key)) return true;
 
     // Insert the current (spot, dir) pair into the visited set
     visited.put(key, {}) catch unreachable;
 
     // Get the new spot and direction using searchStep
-    const result = searchStep(m, spot, dir);
-    const newSpot = result[0];
-    const newDir = result[1];
+    const result = searchStep(spot, dir, m);
+    const newSpot = result.pos;
+    const newDir = result.dir;
 
-    return testBlockPositionHelper(allocator, m, newSpot, newDir, visited);
+    return testBlockPositionHelper(m, newSpot, newDir, visited);
 }
 
 // testBlockPosition function
@@ -258,7 +247,7 @@ fn testBlockPosition(
     var visited = std.AutoHashMap(PositionAndDir, void).init(allocator);
     defer visited.deinit();
 
-    return testBlockPositionHelper(allocator, blockedMap, gs, Dir.N, &visited);
+    return testBlockPositionHelper(blockedMap, gs, Dir.N, &visited);
 }
 
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
@@ -319,19 +308,6 @@ pub fn main() !void {
     defer freeGrid(allocator, grid);
 
     const stdout = std.io.getStdOut().writer();
-    // // Print the grid
-    // for (grid) |row| {
-    //     for (row) |loc| {
-    //         const char: u8 = switch (loc) {
-    //             .EMPTY => '.',
-    //             .BLOCKED => '#',
-    //             .GUARD => '^',
-    //             .VISITED => 'V',
-    //         };
-    //         try stdout.print("{c}", .{char});
-    //     }
-    //     try stdout.print("\n", .{});
-    // }
 
     const result = solve(allocator, grid);
     try stdout.print("Result: {!}\n", .{result});
