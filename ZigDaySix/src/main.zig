@@ -112,6 +112,13 @@ fn guardStart(grid: [][]Loc) !Position {
     return error.GuardNotFound;
 }
 
+fn keyToPosition(key: u64) Position {
+    return Position{
+        .row = @intCast(key >> 32),
+        .col = @intCast(key & 0xFFFFFFFF),
+    };
+}
+
 fn positionToKey(pos: Position) u64 {
     return (@as(u64, pos.row) << 32) | pos.col;
 }
@@ -184,7 +191,16 @@ fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     const gs = try guardStart(grid);
     const searchResult = try search(allocator, gs, Dir.N, grid);
-    // const vps = visitedPositions(allocator, searchResult.grid);
+    var vps = try visitedPositions(allocator, searchResult.grid);
+    defer vps.deinit();
+
+    _ = vps.remove(positionToKey(gs));
+
+    var it = vps.keyIterator();
+    while (it.next()) |key| {
+        const blockPosition = keyToPosition(key.*);
+        _ = blockPosition;
+    }
     return searchResult.score;
 }
 
