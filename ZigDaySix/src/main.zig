@@ -191,7 +191,7 @@ fn searchStep(
     grid: [][]Loc,
 ) PositionAndDir {
     if (pos.row >= grid.len or pos.col >= grid[0].len or pos.row < 0 or pos.col < 0) {
-        return .{ .pos = pos, .dir = dir };
+        return PositionAndDir{ .pos = pos, .dir = dir };
     }
 
     if (isForwardBlocked(pos, dir, grid)) {
@@ -199,7 +199,7 @@ fn searchStep(
     }
 
     const new_pos = moveForward(pos, dir);
-    return searchStep(new_pos, dir, grid);
+    return PositionAndDir{ .pos = new_pos, .dir = dir };
 }
 
 fn testBlockPositionHelper(
@@ -209,17 +209,19 @@ fn testBlockPositionHelper(
     visited: *std.AutoHashMap(PositionAndDir, void),
 ) bool {
     // Check if position is out of bounds
-    if (spot.row >= m.len or spot.col >= m[0].len) {
+    if (spot.row >= m.len or spot.col >= m[0].len or spot.row < 0 or spot.col < 0) {
         return false;
     }
-    // Check if the (spot, dir) pair is in the visited set
+    // Check if the (spot, dir) pair is in the visited set so we found a loop
     const key = PositionAndDir{ .pos = spot, .dir = dir };
     if (visited.contains(key)) return true;
 
     // Insert the current (spot, dir) pair into the visited set
     visited.put(key, {}) catch unreachable;
 
-    // Get the new spot and direction using searchStep
+    // const stdout = std.io.getStdOut().writer();
+    // stdout.print("searchStep: {any}\n", .{spot}) catch {};
+
     const result = searchStep(spot, dir, m);
     const newSpot = result.pos;
     const newDir = result.dir;
