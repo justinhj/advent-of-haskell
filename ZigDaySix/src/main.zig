@@ -176,6 +176,38 @@ fn search(
     return try search(allocator, new_pos, dir, grid);
 }
 
+fn searchStep(
+    allocator: std.mem.Allocator,
+    pos: Position,
+    dir: Dir,
+    grid: [][]Loc, // Mutable reference to grid
+) !struct { score: usize, grid: [][]Loc } {
+    // Ensure grid dimensions are valid
+    if (grid.len == 0 or grid[0].len == 0) {
+        return error.InvalidGrid;
+    }
+
+    // Check if position is out of bounds
+    if (pos.row >= grid.len or pos.col >= grid[0].len) {
+        const s = try score(allocator, grid);
+        return .{ .score = s, .grid = grid };
+    }
+
+    // Check if forward is blocked
+    if (isForwardBlocked(pos, dir, grid)) {
+        // Recursive call with a turned direction
+        return try search(allocator, pos, turnRight(dir), grid);
+    }
+
+    // Not blocked, so mark current spot as visited
+    grid[pos.row][pos.col] = Loc.VISITED;
+
+    // Move forward
+    const new_pos = moveForward(pos, dir);
+
+    // Recursive call with updated position and grid
+    return try search(allocator, new_pos, dir, grid);
+}
 /// Loads the content of a file into a string using the provided allocator.
 fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     // Open the file
