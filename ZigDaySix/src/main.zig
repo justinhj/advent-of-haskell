@@ -101,7 +101,7 @@ fn isForwardBlocked(pos: Position, dir: Dir, grid: [][]Loc) bool {
     return grid[new_pos.row][new_pos.col] == Loc.BLOCKED;
 }
 
-fn guardStart(grid: [][]Loc) Position {
+fn guardStart(grid: [][]Loc) !Position {
     for (grid, 0..) |row, row_index| {
         for (row, 0..) |loc, col_index| {
             if (loc == Loc.GUARD) {
@@ -109,7 +109,7 @@ fn guardStart(grid: [][]Loc) Position {
             }
         }
     }
-    return Position{ .row = 0, .col = 0 };
+    return error.GuardNotFound;
 }
 
 fn positionToKey(pos: Position) u64 {
@@ -130,31 +130,43 @@ fn visitedPositions(allocator: std.mem.Allocator, grid: [][]Loc) !std.AutoHashMa
     return visited;
 }
 
-fn score(allocator: std.mem.Allocator, grid: [][]Loc) usize {
-    var visited = visitedPositions(allocator, grid) catch {
-        // If allocation fails, return 0 as a safe default
-        return 0;
-    };
+fn score(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
+    var visited = try visitedPositions(allocator, grid);
     defer visited.deinit();
     return visited.count();
 }
 
-fn search(allocator: std.mem.Allocator, pos: Position, dir: Dir, grid: [][]Loc) struct { score: usize, grid: [][]Loc } {
+fn search(
+    allocator: std.mem.Allocator,
+    pos: Position,
+    dir: Dir,
+    grid: [][]Loc, // Mutable reference to grid
+) !struct { score: usize, grid: [][]Loc } {
+    // Ensure grid dimensions are valid
+    if (grid.len == 0 or grid[0].len == 0) {
+        return error.InvalidGrid;
+    }
+
     // Check if position is out of bounds
     if (pos.row >= grid.len or pos.col >= grid[0].len) {
-        return .{ .score = score(allocator, grid), .grid = grid };
+        const s = try score(allocator, grid);
+        return .{ .score = s, .grid = grid };
     }
 
     // Check if forward is blocked
     if (isForwardBlocked(pos, dir, grid)) {
-        return search(allocator, pos, turnRight(dir), grid);
+        // Recursive call with a turned direction
+        return try search(allocator, pos, turnRight(dir), grid);
     }
 
-    // Not blocked, so mark current spot as visited and move forward
+    // Not blocked, so mark current spot as visited
     grid[pos.row][pos.col] = Loc.VISITED;
+
+    // Move forward
     const new_pos = moveForward(pos, dir);
 
-    return search(allocator, new_pos, dir, grid);
+    // Recursive call with updated position and grid
+    return try search(allocator, new_pos, dir, grid);
 }
 
 /// Loads the content of a file into a string using the provided allocator.
@@ -169,11 +181,10 @@ fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
     return file_content;
 }
 
-pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) usize {
-    const gs = guardStart(grid);
-
-    const searchResult = search(allocator, gs, Dir.N, grid);
-
+pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
+    const gs = try guardStart(grid);
+    const searchResult = try search(allocator, gs, Dir.N, grid);
+    // const vps = visitedPositions(allocator, searchResult.grid);
     return searchResult.score;
 }
 
@@ -189,7 +200,7 @@ pub fn main() !void {
 
     // Check if a file path was provided
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <file_path>\n", .{args[0]});
+        std.debug.print("Usage: {any} <file_path>\n", .{args[0]});
         return error.InvalidArguments;
     }
 
@@ -202,21 +213,21 @@ pub fn main() !void {
     const grid = try parseGrid(allocator, file_content);
     defer freeGrid(allocator, grid);
 
-    // Print the grid
     const stdout = std.io.getStdOut().writer();
-    for (grid) |row| {
-        for (row) |loc| {
-            const char: u8 = switch (loc) {
-                .EMPTY => '.',
-                .BLOCKED => '#',
-                .GUARD => '^',
-                .VISITED => 'V',
-            };
-            try stdout.print("{c}", .{char});
-        }
-        try stdout.print("\n", .{});
-    }
+    // // Print the grid
+    // for (grid) |row| {
+    //     for (row) |loc| {
+    //         const char: u8 = switch (loc) {
+    //             .EMPTY => '.',
+    //             .BLOCKED => '#',
+    //             .GUARD => '^',
+    //             .VISITED => 'V',
+    //         };
+    //         try stdout.print("{c}", .{char});
+    //     }
+    //     try stdout.print("\n", .{});
+    // }
 
     const result = solve(allocator, grid);
-    try stdout.print("Result: {d}\n", .{result});
+    try stdout.print("Result: {!}\n", .{result});
 }
