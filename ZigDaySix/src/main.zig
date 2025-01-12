@@ -19,11 +19,17 @@ const Dir = enum {
 const Position = struct {
     row: i32,
     col: i32,
+    pub fn equals(self: Position, other: Position) bool {
+        return self.row == other.row and self.col == other.col;
+    }
 };
 
 const PositionAndDir = struct {
     pos: Position,
     dir: Dir,
+    pub fn equals(self: PositionAndDir, other: PositionAndDir) bool {
+        return self.dir == other.dir and self.pos.equals(other.pos);
+    }
 };
 
 /// Parses a string into a 2D array of `Loc`.
@@ -202,31 +208,21 @@ fn searchStep(
     return PositionAndDir{ .pos = new_pos, .dir = dir };
 }
 
+// Advance the search one step
 fn testBlockPositionHelper(
     m: [][]Loc,
     spot: Position,
     dir: Dir,
-    visited: *std.AutoHashMap(PositionAndDir, void),
-) bool {
-    // Check if position is out of bounds
+) ?PositionAndDir {
     if (spot.row >= m.len or spot.col >= m[0].len or spot.row < 0 or spot.col < 0) {
-        return false;
+        return null;
     }
-    // Check if the (spot, dir) pair is in the visited set so we found a loop
-    const key = PositionAndDir{ .pos = spot, .dir = dir };
-    if (visited.contains(key)) return true;
-
-    // Insert the current (spot, dir) pair into the visited set
-    visited.put(key, {}) catch unreachable;
-
-    // const stdout = std.io.getStdOut().writer();
-    // stdout.print("searchStep: {any}\n", .{spot}) catch {};
 
     const result = searchStep(spot, dir, m);
     const newSpot = result.pos;
     const newDir = result.dir;
 
-    return testBlockPositionHelper(m, newSpot, newDir, visited);
+    return PositionAndDir{ .pos = newSpot, .dir = newDir };
 }
 
 // testBlockPosition function
@@ -246,10 +242,33 @@ fn testBlockPosition(
     }
     blockedMap[@intCast(bp.row)][@intCast(bp.col)] = Loc.BLOCKED;
 
-    var visited = std.AutoHashMap(PositionAndDir, void).init(allocator);
-    defer visited.deinit();
+    // run two paths in a loop where one advances 2 steps and the other advances
+    // one step. as soon as one escapes it is safe, otherwise, if there is a loop
+    // then we will find it when the two steps are in the same place
 
-    return testBlockPositionHelper(blockedMap, gs, Dir.N, &visited);
+    var p1: ?PositionAndDir = PositionAndDir{ .pos = gs, .dir = Dir.N };
+    var p2: ?PositionAndDir = PositionAndDir{ .pos = gs, .dir = Dir.N };
+
+    var loopFound = false;
+    while (p1 != null and p2 != null) {
+        if (p1) |p1Val| {
+            p1 = testBlockPositionHelper(blockedMap, p1Val.pos, p1Val.dir);
+        }
+
+        if (p2) |p2Val| {
+            p2 = testBlockPositionHelper(blockedMap, p2Val.pos, p2Val.dir);
+            if (p2) |p2Val2| {
+                p2 = testBlockPositionHelper(blockedMap, p2Val2.pos, p2Val2.dir);
+            }
+        }
+
+        if (p1 != null and p2 != null and p1.?.equals(p2.?)) {
+            loopFound = true;
+            break;
+        }
+    }
+
+    return loopFound;
 }
 
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
