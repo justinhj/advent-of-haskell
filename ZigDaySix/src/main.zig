@@ -211,13 +211,14 @@ fn searchStep(
 // Advance the search one step
 fn testBlockPositionHelper(
     m: [][]Loc,
-    spot: Position,
-    dir: Dir,
+    pd: PositionAndDir,
 ) ?PositionAndDir {
+    const spot = pd.pos;
     if (spot.row >= m.len or spot.col >= m[0].len or spot.row < 0 or spot.col < 0) {
         return null;
     }
 
+    const dir = pd.dir;
     const result = searchStep(spot, dir, m);
     const newSpot = result.pos;
     const newDir = result.dir;
@@ -251,15 +252,11 @@ fn testBlockPosition(
 
     var loopFound = false;
     while (p1 != null and p2 != null) {
-        if (p1) |p1Val| {
-            p1 = testBlockPositionHelper(blockedMap, p1Val.pos, p1Val.dir);
-        }
+        p1 = testBlockPositionHelper(blockedMap, p1.?);
 
+        p2 = testBlockPositionHelper(blockedMap, p2.?);
         if (p2) |p2Val| {
-            p2 = testBlockPositionHelper(blockedMap, p2Val.pos, p2Val.dir);
-            if (p2) |p2Val2| {
-                p2 = testBlockPositionHelper(blockedMap, p2Val2.pos, p2Val2.dir);
-            }
+            p2 = testBlockPositionHelper(blockedMap, p2Val);
         }
 
         if (p1 != null and p2 != null and p1.?.equals(p2.?)) {
