@@ -100,7 +100,7 @@ fn turnRight(dir: Dir) Dir {
     };
 }
 
-fn isForwardBlocked(pos: Position, dir: Dir, grid: [][]Loc) bool {
+fn isForwardBlocked(pos: Position, dir: Dir, grid: []const []const Loc) bool {
     const new_pos = moveForward(pos, dir);
 
     if (new_pos.row >= grid.len or new_pos.col >= grid[0].len or new_pos.row < 0 or new_pos.col < 0) {
@@ -194,12 +194,8 @@ fn search(
 fn searchStep(
     pos: Position,
     dir: Dir,
-    grid: [][]Loc,
+    grid: []const []const Loc,
 ) PositionAndDir {
-    if (pos.row >= grid.len or pos.col >= grid[0].len or pos.row < 0 or pos.col < 0) {
-        return PositionAndDir{ .pos = pos, .dir = dir };
-    }
-
     if (isForwardBlocked(pos, dir, grid)) {
         return searchStep(pos, turnRight(dir), grid);
     }
@@ -208,9 +204,8 @@ fn searchStep(
     return PositionAndDir{ .pos = new_pos, .dir = dir };
 }
 
-// Advance the search one step
-fn testBlockPositionHelper(
-    m: [][]Loc,
+fn advanceStep(
+    m: []const []const Loc,
     pd: PositionAndDir,
 ) ?PositionAndDir {
     const spot = pd.pos;
@@ -229,7 +224,7 @@ fn testBlockPositionHelper(
 // testBlockPosition function
 fn testBlockPosition(
     allocator: std.mem.Allocator,
-    m: [][]Loc,
+    m: []const []const Loc,
     gs: Position,
     bp: Position,
 ) bool {
@@ -252,11 +247,11 @@ fn testBlockPosition(
 
     var loopFound = false;
     while (p1 != null and p2 != null) {
-        p1 = testBlockPositionHelper(blockedMap, p1.?);
+        p1 = advanceStep(blockedMap, p1.?);
 
-        p2 = testBlockPositionHelper(blockedMap, p2.?);
+        p2 = advanceStep(blockedMap, p2.?);
         if (p2) |p2Val| {
-            p2 = testBlockPositionHelper(blockedMap, p2Val);
+            p2 = advanceStep(blockedMap, p2Val);
         }
 
         if (p1 != null and p2 != null and p1.?.equals(p2.?)) {
