@@ -292,23 +292,25 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     var it = vps.keyIterator();
     // Iterator over numCpu number of threads
     while (nextIndex < vpCount) {
-        const numberToProcess = @max(vpCount - nextIndex, cpuCount);
+        const numberToProcess = @min(vpCount - nextIndex, cpuCount);
         const first = nextIndex;
 
         for (threads) |*item| {
             item.* = null;
         }
 
-        while (nextIndex < numberToProcess) {
+        while ((nextIndex - first) < numberToProcess) {
             const key = it.next();
 
             const blockPosition = keyToPosition(key.?.*);
             const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, blockPosition, &results[nextIndex] });
+            // std.debug.print("{} {} {} {}\n", .{ nextIndex, first, cpuCount, vpCount });
             threads[nextIndex - first] = thread;
 
             nextIndex += 1;
         }
 
+        // std.debug.print("loop", .{});
         for (threads) |thread| {
             if (thread != null) {
                 std.Thread.join(thread.?);
