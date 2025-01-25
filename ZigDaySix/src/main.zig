@@ -280,10 +280,11 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
 
     const vpCount = vps.count();
 
-    const results = allocator.alloc(bool, vpCount);
+    const results = try allocator.alloc(bool, vpCount);
     defer allocator.free(results);
 
-    var threads = allocator.alloc(?std.Thread, cpuCount);
+    var threads = try allocator.alloc(?std.Thread, cpuCount);
+    defer allocator.free(threads);
 
     var nextIndex: usize = 0;
     const config = std.Thread.SpawnConfig{};
@@ -294,29 +295,28 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
         const numberToProcess = @max(vpCount - nextIndex, cpuCount);
         const first = nextIndex;
 
-        for (&threads) |*item| {
+        for (threads) |*item| {
             item.* = null;
         }
 
         while (nextIndex < numberToProcess) {
             const key = it.next();
-            std.debug.assert(key != null);
 
-            const blockPosition = keyToPosition(key.*);
-            const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, blockPosition, results[nextIndex] });
+            const blockPosition = keyToPosition(key.?.*);
+            const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, blockPosition, &results[nextIndex] });
             threads[nextIndex - first] = thread;
 
             nextIndex += 1;
         }
 
-        for (&threads) |*item| {
-            if (item.* != null) {
-                std.Thread.join(item.*);
+        for (threads) |thread| {
+            if (thread != null) {
+                std.Thread.join(thread.?);
             }
         }
     }
 
-    var count = 0;
+    var count: usize = 0;
     for (results) |r| {
         if (r) {
             count += 1;
