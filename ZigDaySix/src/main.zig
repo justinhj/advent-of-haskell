@@ -289,6 +289,7 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     var nextIndex: usize = 0;
     const config = std.Thread.SpawnConfig{};
 
+    std.debug.print("cpu count {}\n", .{cpuCount});
     var it = vps.keyIterator();
     // Iterator over numCpu number of threads
     while (nextIndex < vpCount) {
