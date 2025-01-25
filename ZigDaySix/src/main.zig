@@ -162,7 +162,7 @@ fn search(
     allocator: std.mem.Allocator,
     pos: Position,
     dir: Dir,
-    grid: [][]Loc, // Mutable reference to grid
+    grid: [][]Loc,
 ) !struct { score: usize, grid: [][]Loc } {
     // Ensure grid dimensions are valid
     if (grid.len == 0 or grid[0].len == 0) {
@@ -296,6 +296,8 @@ fn loadFileToString(allocator: std.mem.Allocator, file_path: []const u8) ![]u8 {
 }
 
 pub fn main() !void {
+    const startTime = std.time.microTimestamp();
+
     // Get the allocator
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -313,7 +315,6 @@ pub fn main() !void {
 
     const file_path = args[1];
 
-    // Load the file content into a string
     const file_content = try loadFileToString(allocator, file_path);
     defer allocator.free(file_content);
 
@@ -323,5 +324,9 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     const result = solve(allocator, grid);
+
+    const endTime = std.time.microTimestamp();
+
+    try stdout.print("Elapsed time: {} us\n", .{endTime - startTime});
     try stdout.print("Result: {!}\n", .{result});
 }
