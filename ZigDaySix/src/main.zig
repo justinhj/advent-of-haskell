@@ -263,6 +263,11 @@ fn testBlockPosition(
     return loopFound;
 }
 
+pub fn worker(allocator: std.mem.Allocator, m: []const []const Loc, gs: Position, bp: Position, result: *bool) void {
+    const t = testBlockPosition(allocator, m, gs, bp);
+    result.* = t;
+}
+
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     const gs = try guardStart(grid);
     const searchResult = try search(allocator, gs, Dir.N, grid);
@@ -271,16 +276,54 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
 
     _ = vps.remove(positionToKey(gs));
 
+    const cpuCount = try std.Thread.getCpuCount();
+
+    const vpCount = vps.count();
+
+    const results = allocator.alloc(bool, vpCount);
+    defer allocator.free(results);
+
+    var threads = allocator.alloc(?std.Thread, cpuCount);
+
+    var nextIndex: usize = 0;
+    const config = std.Thread.SpawnConfig{};
+
     var it = vps.keyIterator();
-    var blockedCount: usize = 0;
-    while (it.next()) |key| {
-        const blockPosition = keyToPosition(key.*);
-        const t = testBlockPosition(allocator, grid, gs, blockPosition);
-        if (t) {
-            blockedCount += 1;
+    // Iterator over numCpu number of threads
+    while (nextIndex < vpCount) {
+        const numberToProcess = @max(vpCount - nextIndex, cpuCount);
+        const first = nextIndex;
+
+        for (&threads) |*item| {
+            item.* = null;
+        }
+
+        while (nextIndex < numberToProcess) {
+            const key = it.next();
+            std.debug.assert(key != null);
+
+            const blockPosition = keyToPosition(key.*);
+            const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, blockPosition, results[nextIndex] });
+            threads[nextIndex - first] = thread;
+
+            nextIndex += 1;
+        }
+
+        for (&threads) |*item| {
+            if (item.* != null) {
+                std.Thread.join(item.*);
+            }
         }
     }
-    return blockedCount;
+
+    var count = 0;
+    for (results) |r| {
+        if (r) {
+            count += 1;
+        }
+    }
+
+    return count;
 }
 
 /// Loads the content of a file into a string using the provided allocator.
