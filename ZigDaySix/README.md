@@ -10,3 +10,9 @@ Note I have change the algorithm on the Zig version which took it from 3.5 to 1.
 Both running 2019 Macbook Pro 2.3 GHz 8-Core Intel Core i9.
 
 Not sure if I have optimization enabled on the Haskell version though.
+
+Timings before and after doing a multithreaded solution
+
+original no threading 1543025 us
+with dumb ass threading model 1168147 us
+with more sound threading model 1154464 us
