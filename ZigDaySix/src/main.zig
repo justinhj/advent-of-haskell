@@ -263,9 +263,12 @@ fn testBlockPosition(
     return loopFound;
 }
 
-pub fn worker(allocator: std.mem.Allocator, m: []const []const Loc, gs: Position, bp: Position, result: *bool) void {
-    const t = testBlockPosition(allocator, m, gs, bp);
-    result.* = t;
+pub fn worker(allocator: std.mem.Allocator, m: []const []const Loc, gs: Position, bp: []Position, offset: usize, results: []bool) void {
+    var i: usize = 0;
+    for (bp) |thisBp| {
+        results[offset + i] = testBlockPosition(allocator, m, gs, thisBp);
+        i += 1;
+    }
 }
 
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
@@ -286,36 +289,53 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     var threads = try allocator.alloc(?std.Thread, cpuCount);
     defer allocator.free(threads);
 
-    var nextIndex: usize = 0;
     const config = std.Thread.SpawnConfig{};
 
     std.debug.print("cpu count {}\n", .{cpuCount});
+
+    // Create an array of candidate positions for each thread
+    var candidates = try allocator.alloc([]Position, cpuCount);
+    defer {
+        for (candidates) |c| {
+            allocator.free(c);
+        }
+        allocator.free(candidates);
+    }
+
+    const candidatesPerThread = vpCount / cpuCount;
+    const remainders = vpCount % cpuCount;
+
     var it = vps.keyIterator();
-    // Iterator over numCpu number of threads
-    while (nextIndex < vpCount) {
-        const numberToProcess = @min(vpCount - nextIndex, cpuCount);
-        const first = nextIndex;
 
-        for (threads) |*item| {
-            item.* = null;
+    for (0..cpuCount) |i| {
+        var thisCount: usize = 0;
+        if (i < cpuCount - 1) {
+            thisCount = candidatesPerThread;
+        } else {
+            thisCount = candidatesPerThread + remainders;
         }
+        candidates[i] = try allocator.alloc(Position, thisCount);
 
-        while ((nextIndex - first) < numberToProcess) {
+        for (0..thisCount) |j| {
             const key = it.next();
-
             const blockPosition = keyToPosition(key.?.*);
-            const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, blockPosition, &results[nextIndex] });
-            // std.debug.print("{} {} {} {}\n", .{ nextIndex, first, cpuCount, vpCount });
-            threads[nextIndex - first] = thread;
-
-            nextIndex += 1;
+            candidates[i][j] = blockPosition;
         }
+    }
 
-        // std.debug.print("loop", .{});
-        for (threads) |thread| {
-            if (thread != null) {
-                std.Thread.join(thread.?);
-            }
+    var ti: usize = 0;
+    var off: usize = 0;
+    for (candidates) |c| {
+        const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, c, off, results });
+        // std.debug.print("{} {} {} {}\n", .{ nextIndex, first, cpuCount, vpCount });
+        threads[ti] = thread;
+        ti += 1;
+        off += candidatesPerThread;
+    }
+
+    for (threads) |t| {
+        if (t) |t1| {
+            t1.join();
         }
     }
 
