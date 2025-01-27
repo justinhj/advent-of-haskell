@@ -279,7 +279,7 @@ pub fn worker(m: []const []const Loc, gs: Position, bp: []Position, offset: usiz
     // stdout.print("Elapsed time thread offset count: {} us {} count {}\n", .{ offset, endTime - startTime, bp.len }) catch {};
 }
 
-pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
+pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc, cpuCount: usize) !usize {
     const gs = try guardStart(grid);
     const searchResult = try search(allocator, gs, Dir.N, grid);
     var vps = try visitedPositions(allocator, searchResult.grid);
@@ -287,7 +287,6 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
 
     _ = vps.remove(positionToKey(gs));
 
-    const cpuCount = 4; // try std.Thread.getCpuCount();
     const vpCount = vps.count();
 
     const results = try allocator.alloc(bool, vpCount);
@@ -392,7 +391,16 @@ pub fn main() !void {
         return error.InvalidArguments;
     }
 
+    const cpuCount = try std.Thread.getCpuCount();
+
     const file_path = args[1];
+    var threads = cpuCount;
+    if (args.len > 2) {
+        const threadCount = try std.fmt.parseInt(u32, args[2], 10); // Parse the thread count
+        if (threadCount > 0) {
+            threads = threadCount; // Assign to `threads` if valid
+        }
+    }
 
     const file_content = try loadFileToString(allocator, file_path);
     defer allocator.free(file_content);
@@ -402,7 +410,7 @@ pub fn main() !void {
 
     const stdout = std.io.getStdOut().writer();
 
-    const result = solve(allocator, grid);
+    const result = solve(allocator, grid, threads);
 
     const endTime = std.time.microTimestamp();
 
