@@ -263,12 +263,20 @@ fn testBlockPosition(
     return loopFound;
 }
 
-pub fn worker(allocator: std.mem.Allocator, m: []const []const Loc, gs: Position, bp: []Position, offset: usize, results: []bool) void {
+pub fn worker(m: []const []const Loc, gs: Position, bp: []Position, offset: usize, results: []bool) void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    // const stdout = std.io.getStdOut().writer();
+    // const startTime = std.time.microTimestamp();
     var i: usize = 0;
     for (bp) |thisBp| {
         results[offset + i] = testBlockPosition(allocator, m, gs, thisBp);
         i += 1;
     }
+    // const endTime = std.time.microTimestamp();
+    // stdout.print("Elapsed time thread offset count: {} us {} count {}\n", .{ offset, endTime - startTime, bp.len }) catch {};
 }
 
 pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
@@ -279,8 +287,7 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
 
     _ = vps.remove(positionToKey(gs));
 
-    const cpuCount = try std.Thread.getCpuCount();
-
+    const cpuCount = 4; // try std.Thread.getCpuCount();
     const vpCount = vps.count();
 
     const results = try allocator.alloc(bool, vpCount);
@@ -326,18 +333,24 @@ pub fn solve(allocator: std.mem.Allocator, grid: [][]Loc) !usize {
     var ti: usize = 0;
     var off: usize = 0;
     for (candidates) |c| {
-        const thread = try std.Thread.spawn(config, worker, .{ allocator, grid, gs, c, off, results });
+        const thread = try std.Thread.spawn(config, worker, .{ grid, gs, c, off, results });
         // std.debug.print("{} {} {} {}\n", .{ nextIndex, first, cpuCount, vpCount });
         threads[ti] = thread;
         ti += 1;
         off += candidatesPerThread;
     }
 
+    // const stdout = std.io.getStdOut().writer();
+    // const startTime = std.time.microTimestamp();
+
     for (threads) |t| {
         if (t) |t1| {
             t1.join();
         }
     }
+
+    // const endTime = std.time.microTimestamp();
+    // try stdout.print("Elapsed time join phase: {} us\n", .{endTime - startTime});
 
     var count: usize = 0;
     for (results) |r| {
