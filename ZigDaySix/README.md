@@ -7,12 +7,9 @@ Built with `zig build -Doptimize=ReleaseFast` it runs in about ~~3.5~~ 1.5 secon
 
 Note I have change the algorithm on the Zig version which took it from 3.5 to 1.5 seconds. Instead of tracking visited blocks in a hashmap I do the old trick of having two iterators through the path, one at normal speed and the other at double speed. If they catch up then there is a loop.
 
-Both running 2019 Macbook Pro 2.3 GHz 8-Core Intel Core i9.
+Next optimization was to use a number of threads and run them in parallel. As shown below this worked best at 4 threads then showed diminishing returns. A part of this optimization was to give each thread its own memory allocator to avoid contention.
 
-Not sure if I have optimization enabled on the Haskell version though.
+Image link to images/Figure_1.png
+<img src="images/Figure_1.png" alt="drawing" width="400"/>
 
-Timings before and after doing a multithreaded solution
 
-original no threading 1543025 us
-with dumb ass threading model 1168147 us
-with more sound threading model 1154464 us
